@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spinit.CosmosDb", "Spinit.CosmosDb\Spinit.CosmosDb.csproj", "{40EC2E59-8CA4-4E33-B884-1DF26E42B378}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{0000B1BF-A65B-4511-BE47-F4A8CDE354B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spinit.CosmosDb.UnitTests", "Spinit.CosmosDb.UnitTests\Spinit.CosmosDb.UnitTests.csproj", "{0697924C-A5EB-484B-94F5-FA25DFAABB6E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{40EC2E59-8CA4-4E33-B884-1DF26E42B378}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40EC2E59-8CA4-4E33-B884-1DF26E42B378}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40EC2E59-8CA4-4E33-B884-1DF26E42B378}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40EC2E59-8CA4-4E33-B884-1DF26E42B378}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0697924C-A5EB-484B-94F5-FA25DFAABB6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0697924C-A5EB-484B-94F5-FA25DFAABB6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0697924C-A5EB-484B-94F5-FA25DFAABB6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0697924C-A5EB-484B-94F5-FA25DFAABB6E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0697924C-A5EB-484B-94F5-FA25DFAABB6E} = {0000B1BF-A65B-4511-BE47-F4A8CDE354B1}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7EFC6537-EC59-4A1B-9DAB-6C6CE92A7C4A}
+	EndGlobalSection
+EndGlobal

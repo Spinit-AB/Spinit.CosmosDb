@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Version>0.0.1</Version>
+    <Authors>Spinit AB</Authors>
+    <Description>Lightweigt CosmosDb wrapper</Description>
+    <Copyright>Spinit AB</Copyright>
+    <PackageLicenseUrl>https://github.com/Spinit-AB/Spinit.CosmosDb/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Spinit-AB/Spinit.CosmosDb</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Spinit-AB/Spinit.CosmosDb</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

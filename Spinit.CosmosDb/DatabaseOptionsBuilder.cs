@@ -21,11 +21,15 @@ namespace Spinit.CosmosDb
                 ConnectionString = connectionString
             };
 
+            var preferredLocation = connectionStringBuilder.ContainsKey("PreferredLocation")
+                ? connectionStringBuilder["PreferredLocation"].ToString()
+                : null;
+
             Options = new DatabaseOptions<TDatabase>
             {
                 Endpoint = connectionStringBuilder["AccountEndpoint"].ToString(),
                 Key = connectionStringBuilder["AccountKey"].ToString(),
-                PreferredLocation = connectionStringBuilder["PreferredLocation"].ToString()
+                PreferredLocation = preferredLocation
             };
             return this;
         }

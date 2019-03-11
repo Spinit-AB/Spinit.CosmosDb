@@ -1,9 +1,7 @@
-﻿using System;
-
-namespace Spinit.CosmosDb
+﻿namespace Spinit.CosmosDb
 {
     public interface ICosmosEntity
     {
-        Guid Id { get; set; }
+        string Id { get; set; }
     }
 }

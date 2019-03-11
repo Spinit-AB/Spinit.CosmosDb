@@ -5,7 +5,7 @@ namespace Spinit.CosmosDb.UnitTests.Helpers
 {
     public class TestEntity : ICosmosEntity
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         public string Name { get; set; }
 

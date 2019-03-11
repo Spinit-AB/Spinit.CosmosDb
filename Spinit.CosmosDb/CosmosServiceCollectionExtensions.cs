@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
+// TODO: Move to Microsoft.Extensions.DependencyInjection namespace?
 namespace Spinit.CosmosDb
 {
     public static class CosmosServiceCollectionExtensions
@@ -28,7 +29,7 @@ namespace Spinit.CosmosDb
            where TDatabase : CosmosDatabase
         {
             serviceCollection
-                .AddSingleton<DatabaseOptions<TDatabase>>(sp => 
+                .AddSingleton<DatabaseOptions<TDatabase>>(sp =>
                 {
                     var optionsBuilder = new DatabaseOptionsBuilder<TDatabase>();
                     options(optionsBuilder);
@@ -45,6 +46,6 @@ namespace Spinit.CosmosDb
                 });
             }
             return serviceCollection;
-        }        
+        }
     }
 }

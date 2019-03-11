@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Spinit.CosmosDb
-{    
+{
     internal class DbEntry<TEntity> : ICosmosEntity
         where TEntity : class, ICosmosEntity
     {
@@ -14,12 +13,12 @@ namespace Spinit.CosmosDb
         {
             Id = entity.Id;
             Original = entity;
-            Normalized = entity.CreateNormalized(); 
+            Normalized = entity.CreateNormalized();
             All = TermAnalyzer.Analyze(entity.GetAllTextFieldValues());
         }
 
         [JsonProperty(PropertyName = "id")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         public TEntity Original { get; set; }
 

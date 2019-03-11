@@ -9,6 +9,10 @@ namespace Spinit.CosmosDb
         string Query { get; }
 
         int? PageSize { get; }
+        /// <summary>
+        /// Should <see cref="SearchResponse{T}.TotalCount"/> be calculated. This is currently a resource heavy operation, use sparingly.
+        /// </summary>
+        bool IncludeTotalCount { get; }
         string ContinuationToken { get; }
 
         Expression<Func<T, bool>> Filter { get; }
@@ -23,6 +27,10 @@ namespace Spinit.CosmosDb
         public virtual string Query { get; set; }
 
         public virtual int? PageSize { get; set; } = 20;
+        /// <summary>
+        /// Should <see cref="SearchResponse{T}.TotalCount"/> be calculated. This is currently a resource heavy operation, use sparingly.
+        /// </summary>
+        public virtual bool IncludeTotalCount { get; set; } = false;
         public virtual string ContinuationToken { get; set; }
 
         public virtual Expression<Func<T, bool>> Filter { get; set; }
@@ -38,6 +46,7 @@ namespace Spinit.CosmosDb
         {
             target.Query = source.Query;
             target.PageSize = source.PageSize;
+            target.IncludeTotalCount = source.IncludeTotalCount;
             target.ContinuationToken = source.ContinuationToken;
             target.Filter = source.Filter;
             target.SortBy = source.SortBy;

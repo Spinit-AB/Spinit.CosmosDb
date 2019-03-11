@@ -58,7 +58,7 @@ namespace Spinit.CosmosDb.UnitTests
 
             private class TestEntity : ICosmosEntity
             {
-                public Guid Id { get; set; }
+                public string Id { get; set; }
                 public string StringProp { get; set; }
                 public int IntProp { get; set; }
                 public bool BoolProp { get; set; }
@@ -74,7 +74,7 @@ namespace Spinit.CosmosDb.UnitTests
             {
                 var entity = new TestEntity
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.NewGuid().ToString(),
                     Name = "Name",
                     Description = "Description"
                 };

@@ -15,7 +15,7 @@ namespace Spinit.CosmosDb.UnitTests
             {
                 _entity = new TestEntity
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.NewGuid().ToString(),
                     Name = "Test Entity"
                 };
                 _dbEntry = new DbEntry<TestEntity>(_entity);
@@ -24,7 +24,7 @@ namespace Spinit.CosmosDb.UnitTests
             [Fact]
             public void IdShouldBeSet()
             {
-                Assert.NotEqual(Guid.Empty, _dbEntry.Id);
+                Assert.NotEmpty(_dbEntry.Id);
             }
 
             [Fact]
@@ -71,7 +71,7 @@ namespace Spinit.CosmosDb.UnitTests
 
             public class TestEntity : ICosmosEntity
             {
-                public Guid Id { get; set; }
+                public string Id { get; set; }
                 public string Name { get; set; }
             }
         }

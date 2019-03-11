@@ -22,14 +22,28 @@ namespace Spinit.CosmosDb
             _collectionId = collectionId;
         }
 
-        public async Task<TEntity> GetAsync(Guid id)
+        public async Task<TEntity> GetAsync(string id)
         {
-            var options = new RequestOptions { PartitionKey = new PartitionKey(id.ToString()) };
+            var options = new RequestOptions { PartitionKey = new PartitionKey(id) };
             var result = await _documentClient.ReadDocumentAsync<DbEntry<TEntity>>(GetDocumentUri(id), options).ConfigureAwait(false);
             return result.Document.Original;
         }
 
-        public async Task<SearchResponse<TEntity>> SearchAsync(ISearchRequest<TEntity> request)
+        public async Task<TProjection> GetAsync<TProjection>(string id)
+            where TProjection : class, ICosmosEntity
+        {
+            var options = new RequestOptions { PartitionKey = new PartitionKey(id) };
+            var result = await _documentClient.ReadDocumentAsync<DbEntry<TProjection>>(GetDocumentUri(id), options).ConfigureAwait(false);
+            return result.Document.Original;
+        }
+
+        public Task<SearchResponse<TEntity>> SearchAsync(ISearchRequest<TEntity> request)
+        {
+            return SearchAsync<TEntity>(request);
+        }
+
+        public async Task<SearchResponse<TProjection>> SearchAsync<TProjection>(ISearchRequest<TEntity> request)
+            where TProjection : class, ICosmosEntity
         {
             var feedOptions = new FeedOptions
             {
@@ -59,19 +73,15 @@ namespace Spinit.CosmosDb
                     : query.OrderByDescending(request.SortBy.RemapTo<DbEntry<TEntity>, TEntity, object>(x => x.Normalized));
             }
 
-            try
+            var response = await query.Select(x => x.Original).AsDocumentQuery().ExecuteNextAsync<TProjection>().ConfigureAwait(false);
+            return new SearchResponse<TProjection>
             {
-                var response = await query.Select(x => x.Original).AsDocumentQuery().ExecuteNextAsync<TEntity>().ConfigureAwait(false);
-                return new SearchResponse<TEntity>
-                {
-                    ContinuationToken = response.ResponseContinuation,
-                    Documents = response.ToArray()
-                };
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+                ContinuationToken = response.ResponseContinuation,
+                Documents = response.ToArray(),
+                TotalCount = request.IncludeTotalCount
+                    ? await query.CountAsync().ConfigureAwait(false)
+                    : (int?)null
+            };
         }
 
         public Task UpsertAsync(TEntity document)
@@ -89,14 +99,14 @@ namespace Spinit.CosmosDb
             }
         }
 
-        public Task DeleteAsync(Guid id)
+        public Task DeleteAsync(string id)
         {
             throw new NotImplementedException();
         }
 
-        private Uri GetDocumentUri(Guid id)
+        private Uri GetDocumentUri(string id)
         {
-            return UriFactory.CreateDocumentUri(_databaseId, _collectionId, id.ToString());
+            return UriFactory.CreateDocumentUri(_databaseId, _collectionId, id);
         }
 
         private Uri GetCollectionUri()

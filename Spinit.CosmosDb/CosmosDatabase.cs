@@ -20,7 +20,8 @@ namespace Spinit.CosmosDb
         internal static ConnectionPolicy CreateConnectionPolicy(IDatabaseOptions options)
         {
             var connectionPolicy = new ConnectionPolicy();
-            connectionPolicy.PreferredLocations.Add(options.PreferredLocation);
+            if (!string.IsNullOrEmpty(options.PreferredLocation))
+                connectionPolicy.PreferredLocations.Add(options.PreferredLocation);
             return connectionPolicy;
         }
 
@@ -34,7 +35,7 @@ namespace Spinit.CosmosDb
                 if (string.IsNullOrEmpty(databaseId))
                     throw new Exception($"No valid DatabaseId attribute found on type {GetType().Name}");
 
-                var collectionId = collectionProperty.GetCustomAttribute<CollectionIdAttribute>()?.CollectionId; 
+                var collectionId = collectionProperty.GetCustomAttribute<CollectionIdAttribute>()?.CollectionId;
                 if (string.IsNullOrEmpty(collectionId))
                     throw new Exception($"No valid CollectionId attribute found on property {collectionProperty.Name} on type {GetType().Name}");
 

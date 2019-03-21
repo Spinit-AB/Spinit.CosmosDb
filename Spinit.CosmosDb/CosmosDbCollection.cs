@@ -22,20 +22,28 @@ namespace Spinit.CosmosDb
             _collectionId = collectionId;
         }
 
-        public async Task<TEntity> GetAsync(string id)
+        public Task<TEntity> GetAsync(string id) => GetEntityAsync<TEntity>(id);
+
+        public Task<TProjection> GetAsync<TProjection>(string id) where TProjection : class, ICosmosEntity => GetEntityAsync<TProjection>(id);
+
+        private async Task<T> GetEntityAsync<T>(string id)
+            where T : class, ICosmosEntity
         {
-            var options = new RequestOptions { PartitionKey = new PartitionKey(id) };
-            var result = await _documentClient.ReadDocumentAsync<DbEntry<TEntity>>(GetDocumentUri(id), options).ConfigureAwait(false);
-            return result.Document.Original;
+            var searchResponse = await SearchAsync<T>(new SearchRequest<TEntity>
+            {
+                Filter = x => x.Id == id
+            });
+
+            try
+            {
+                return searchResponse.Documents.SingleOrDefault();
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException($"Multiple documents found with id {id}");
+            }
         }
 
-        public async Task<TProjection> GetAsync<TProjection>(string id)
-            where TProjection : class, ICosmosEntity
-        {
-            var options = new RequestOptions { PartitionKey = new PartitionKey(id) };
-            var result = await _documentClient.ReadDocumentAsync<DbEntry<TProjection>>(GetDocumentUri(id), options).ConfigureAwait(false);
-            return result.Document.Original;
-        }
 
         public Task<SearchResponse<TEntity>> SearchAsync(ISearchRequest<TEntity> request)
         {

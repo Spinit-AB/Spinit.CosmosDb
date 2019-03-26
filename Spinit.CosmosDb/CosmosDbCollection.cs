@@ -53,6 +53,43 @@ namespace Spinit.CosmosDb
         public async Task<SearchResponse<TProjection>> SearchAsync<TProjection>(ISearchRequest<TEntity> request)
             where TProjection : class, ICosmosEntity
         {
+            if (request.PageSize.HasValue)
+            {
+                var result = await PerformSearchAsync<TProjection>(request);
+                var documents = result.Documents.ToList();
+
+                if (documents.Count() < request.PageSize)
+                {
+                    var tempRequest = new SearchRequest<TEntity>().Assign(request);
+                    var continuationToken = result.ContinuationToken;
+
+                    while (continuationToken != null && documents.Count() < request.PageSize)
+                    {
+                        tempRequest.ContinuationToken = continuationToken;
+                        tempRequest.PageSize = request.PageSize - documents.Count();
+
+                        result = await PerformSearchAsync<TProjection>(tempRequest);
+
+                        continuationToken = result.ContinuationToken;
+                        documents.AddRange(result.Documents);
+                    }
+
+                    return new SearchResponse<TProjection>
+                    {
+                        ContinuationToken = continuationToken,
+                        Documents = documents,
+                        TotalCount = result.TotalCount
+                    };
+                }
+            }
+
+            return await PerformSearchAsync<TProjection>(request);
+        }
+
+
+        private async Task<SearchResponse<TProjection>> PerformSearchAsync<TProjection>(ISearchRequest<TEntity> request)
+            where TProjection : class, ICosmosEntity
+        {
             var feedOptions = new FeedOptions
             {
                 EnableCrossPartitionQuery = true,
@@ -109,7 +146,10 @@ namespace Spinit.CosmosDb
 
         public Task DeleteAsync(string id)
         {
-            throw new NotImplementedException();
+            return _documentClient.DeleteDocumentAsync(GetDocumentUri(id), new RequestOptions()
+            {
+                PartitionKey = new PartitionKey(Undefined.Value)
+            });
         }
 
         private Uri GetDocumentUri(string id)

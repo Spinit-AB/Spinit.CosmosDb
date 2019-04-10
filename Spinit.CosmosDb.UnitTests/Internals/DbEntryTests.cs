@@ -1,5 +1,4 @@
 ﻿using System;
-using Spinit.CosmosDb;
 using Xunit;
 
 namespace Spinit.CosmosDb.UnitTests

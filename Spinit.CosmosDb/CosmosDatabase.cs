@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.Documents;
@@ -8,13 +9,20 @@ namespace Spinit.CosmosDb
 {
     public abstract class CosmosDatabase
     {
+        private readonly IDocumentClient _documentClient;
+        private readonly IDatabaseOptions _options;
+
         protected CosmosDatabase(IDatabaseOptions options)
-            : this(new DocumentClient(new Uri(options.Endpoint), options.Key, connectionPolicy: CreateConnectionPolicy(options)))
+            : this(new DocumentClient(new Uri(options.Endpoint), options.Key, connectionPolicy: CreateConnectionPolicy(options)), options)
         { }
 
-        internal CosmosDatabase(IDocumentClient client)
+        public IDatabaseOperations Database { get => new DatabaseOperations(this, _documentClient); }
+
+        internal CosmosDatabase(IDocumentClient documentClient, IDatabaseOptions options)
         {
-            SetupCollectionProperties(client);
+            _documentClient = documentClient;
+            _options = options;
+            SetupCollectionProperties();
         }
 
         internal static ConnectionPolicy CreateConnectionPolicy(IDatabaseOptions options)
@@ -25,23 +33,48 @@ namespace Spinit.CosmosDb
             return connectionPolicy;
         }
 
-        private void SetupCollectionProperties(IDocumentClient client)
+        private void SetupCollectionProperties()
         {
-            foreach (var collectionProperty in GetType().GetProperties().Where(x => x.PropertyType.IsGenericType && x.PropertyType.GetGenericTypeDefinition() == typeof(ICosmosDbCollection<>)))
+            foreach (var collectionProperty in GetCollectionProperties())
             {
                 var collectionType = typeof(CosmosDbCollection<>).MakeGenericType(collectionProperty.PropertyType.GenericTypeArguments.Single());
 
-                var databaseId = GetType().GetCustomAttribute<DatabaseIdAttribute>()?.DatabaseId;
-                if (string.IsNullOrEmpty(databaseId))
-                    throw new Exception($"No valid DatabaseId attribute found on type {GetType().Name}");
+                var databaseId = GetDatabaseId();
+                var collectionId = GetCollectionId(collectionProperty);
 
-                var collectionId = collectionProperty.GetCustomAttribute<CollectionIdAttribute>()?.CollectionId;
-                if (string.IsNullOrEmpty(collectionId))
-                    throw new Exception($"No valid CollectionId attribute found on property {collectionProperty.Name} on type {GetType().Name}");
-
-                var collectionInstance = Activator.CreateInstance(collectionType, client, databaseId, collectionId);
+                var entityType = collectionProperty.PropertyType.GenericTypeArguments.Single();
+                var factoryMethod = typeof(CosmosDatabase).GetMethod(nameof(CreateCollection), BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(entityType);
+                var collectionInstance = factoryMethod.Invoke(this, new[] { databaseId, collectionId });
                 collectionProperty.SetValue(this, collectionInstance);
             }
+        }
+
+        private ICosmosDbCollection<TEntity> CreateCollection<TEntity>(string databaseId, string collectionId)
+            where TEntity : class, ICosmosEntity
+        {
+            return new CosmosDbCollection<TEntity>(_documentClient, databaseId, collectionId);
+        }
+
+        internal IEnumerable<PropertyInfo> GetCollectionProperties()
+        {
+            return GetType().GetProperties().Where(x =>
+                x.PropertyType.IsGenericType &&
+                x.PropertyType.GetGenericTypeDefinition() == typeof(ICosmosDbCollection<>));
+        }
+
+        internal string GetDatabaseId()
+        {
+            return !string.IsNullOrEmpty(_options.DatabaseId)
+                ? _options.DatabaseId
+                : GetType().GetCustomAttribute<DatabaseIdAttribute>()?.DatabaseId ?? GetType().Name;
+        }
+
+        internal string GetCollectionId(PropertyInfo collectionPropertyInfo)
+        {
+            var result = collectionPropertyInfo.GetCustomAttribute<CollectionIdAttribute>()?.CollectionId;
+            if (string.IsNullOrEmpty(result))
+                return collectionPropertyInfo.Name;
+            return result;
         }
     }
 }

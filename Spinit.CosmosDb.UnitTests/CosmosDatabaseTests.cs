@@ -1,5 +1,3 @@
-using System;
-using Spinit.CosmosDb;
 using Microsoft.Azure.Documents;
 using Moq;
 using Xunit;
@@ -20,18 +18,17 @@ namespace Spinit.CosmosDb.UnitTests
         }
 
         [Fact]
-        public void ShouldAutoCreateCollections()
+        public void ShouldAutoCreateCollectionProperties()
         {
             var client = Mock.Of<IDocumentClient>();
             var database = new TestDatabase(client);
             Assert.NotNull(database.TestEntities);
         }
 
-        [DatabaseId("TestDatabase")]
         private class TestDatabase : CosmosDatabase
         {
             public TestDatabase(IDocumentClient client)
-                : base(client)
+                : base(client, new DatabaseOptions<TestDatabase>())
             { }
 
             [CollectionId("TestEntities")]

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using AutoFixture;
-using Spinit.CosmosDb;
 using Spinit.CosmosDb.UnitTests.Helpers;
 using Xunit;
 

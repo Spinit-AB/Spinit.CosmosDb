@@ -13,7 +13,7 @@ namespace Spinit.CosmosDb
 
             return text
                 .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim().ToLower())
+                .Select(x => x.Trim().ToLowerInvariant())
                 .ToArray();
         }
 

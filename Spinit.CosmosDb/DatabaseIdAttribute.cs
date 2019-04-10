@@ -2,6 +2,9 @@
 
 namespace Spinit.CosmosDb
 {
+    /// <summary>
+    /// Attribute used for declaring the name/id of the cosmos database
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class DatabaseIdAttribute : Attribute
     {

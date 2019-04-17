@@ -17,7 +17,7 @@ namespace Spinit.CosmosDb.UnitTests
                     Id = Guid.NewGuid().ToString(),
                     Name = "Test Entity"
                 };
-                _dbEntry = new DbEntry<TestEntity>(_entity);
+                _dbEntry = new DbEntry<TestEntity>(_entity, new DefaultAnalyzer());
             }
 
             [Fact]

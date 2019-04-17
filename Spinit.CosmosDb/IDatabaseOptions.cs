@@ -5,6 +5,7 @@
         string Endpoint { get; set; }
 
         string Key { get; set; }
+
         /// <summary>
         /// Database id/name
         /// </summary>

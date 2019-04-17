@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 
 namespace Spinit.CosmosDb
 {
+    // TODO: remove TotalCount and eventually replace with a "Count(ISearchRequest request)" call
     public interface ISearchRequest<T>
         where T : class
     {
@@ -35,6 +36,7 @@ namespace Spinit.CosmosDb
 
         public virtual Expression<Func<T, bool>> Filter { get; set; }
 
+        // TODO: maybe add support for multiple sorts, eg SortBy().ThenBy()...
         public virtual Expression<Func<T, object>> SortBy { get; set; }
         public virtual SortDirection SortDirection { get; set; } = SortDirection.Ascending;
     }

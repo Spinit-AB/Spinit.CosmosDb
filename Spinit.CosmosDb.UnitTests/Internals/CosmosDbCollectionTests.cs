@@ -23,7 +23,7 @@ namespace Spinit.CosmosDb.UnitTests.Internals
                 public static IEnumerable<DummyEntity> Data { get; } = Enumerable.Range(1, 10).Select(x => new DummyEntity { Id = x.ToString() }).ToList();
 
                 public MockDbCollectionThatOnlyReturnsOneRecordOnSearch()
-                    : base(null, "Database", "Collection")
+                    : base(null, new CollectionModel())
                 {
                 }
 

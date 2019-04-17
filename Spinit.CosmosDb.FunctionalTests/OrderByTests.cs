@@ -9,26 +9,21 @@ namespace Spinit.CosmosDb.FunctionalTests
     [TestCaseOrderer("Spinit.CosmosDb.FunctionalTests.Infrastructure.TestCaseByAttributeOrderer", "Spinit.CosmosDb.FunctionalTests")]
     public class OrderByTests : IClassFixture<OrderByTests.TestDatabase>
     {
-        private const string ShouldSkip =
-#if DEBUG
-            null;
-#else
-            "Functional test should only run locally in debug mode";
-#endif
-
         private readonly TestDatabase _database;
 
         public OrderByTests(TestDatabase database)
         {
             _database = database;
-            _database.Database.CreateIfNotExistsAsync().GetAwaiter().GetResult();
+            if (!FunctionTestsConfiguration.Enabled)
+                return;
+            _database.Operations.CreateIfNotExistsAsync().GetAwaiter().GetResult();
             foreach (var entity in GetEntities().Select(x => (TestEntity)x.First()))
             {
                 _database.TestEntities.UpsertAsync(entity).GetAwaiter().GetResult();
             }
         }       
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetEntities))]
         public async Task OrderShouldBeAsExcpected(TestEntity entity)
@@ -78,12 +73,12 @@ namespace Spinit.CosmosDb.FunctionalTests
             private static string GenerateConnectionString()
             {
                 var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
-                return $"AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;DatabaseId={databaseId}";
+                return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
             }
 
             public void Dispose()
             {
-                Database.DeleteAsync().GetAwaiter().GetResult();
+                Operations.DeleteAsync().GetAwaiter().GetResult();
             }
 
             public ICosmosDbCollection<TestEntity> TestEntities { get; set; }

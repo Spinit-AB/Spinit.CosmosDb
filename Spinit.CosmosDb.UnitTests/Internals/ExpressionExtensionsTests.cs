@@ -27,7 +27,7 @@ namespace Spinit.CosmosDb.UnitTests
 
                 var list = new List<DbEntry<MyEntity>>
                 {
-                    new DbEntry<MyEntity>(new MyEntity{ MyEntityProp = "SomeValue"})
+                    new DbEntry<MyEntity>(new MyEntity{ MyEntityProp = "SomeValue"}, new DefaultAnalyzer())
                 };
 
                 Assert.Single(list.AsQueryable().Where(remappedExpression));
@@ -48,8 +48,8 @@ namespace Spinit.CosmosDb.UnitTests
                 var result = expression.RemapTo<DbEntry<MyEntity>, MyEntity, bool>(x => x.Original);
                 var list = new List<DbEntry<MyEntity>>
                 {
-                    new DbEntry<MyEntity>(new MyEntity{ Id = "ShouldBeFound", ModifiedDate = now.AddDays(-1) }),
-                    new DbEntry<MyEntity>(new MyEntity{ Id = "ShouldNotBeFound", ModifiedDate = null }),
+                    new DbEntry<MyEntity>(new MyEntity{ Id = "ShouldBeFound", ModifiedDate = now.AddDays(-1) }, new DefaultAnalyzer()),
+                    new DbEntry<MyEntity>(new MyEntity{ Id = "ShouldNotBeFound", ModifiedDate = null }, new DefaultAnalyzer()),
                 };
                 Assert.Contains(list.AsQueryable().Where(result), x => x.Id == "ShouldBeFound");
                 Assert.DoesNotContain(list.AsQueryable().Where(result), x => x.Id == "ShouldNotBeFound");

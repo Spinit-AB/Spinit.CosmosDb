@@ -7,23 +7,48 @@ using Microsoft.Azure.Documents.Client;
 
 namespace Spinit.CosmosDb
 {
+    /// <summary>
+    /// Abstact base class for a Cosmos database with support for customizing model/analyzer
+    /// <para>
+    /// Extend this and add your collections as public properties
+    /// </para>
+    /// </summary>
+    public abstract class CosmosDatabase<TImplementation> : CosmosDatabase
+        where TImplementation : CosmosDatabase
+    {
+        protected CosmosDatabase(DatabaseOptions<TImplementation> options)
+            : base(options)
+        { }
+
+        /// <summary>
+        /// Extension point for customizing model and analysis
+        /// </summary>
+        /// <param name="modelBuilder"></param>
+        protected virtual void OnModelCreating(DatabaseModelBuilder<TImplementation> modelBuilder)
+        { }
+
+        private protected override DatabaseModel CreateModel()
+        {
+            var databaseModel = base.CreateModel();
+            var databaseModelBuilder = new DatabaseModelBuilder<TImplementation>(databaseModel);
+            OnModelCreating(databaseModelBuilder);
+            return databaseModelBuilder.Build();
+        }
+    }
+
+    /// <summary>
+    /// Abstact base class for a Cosmos database with default model/analyzer
+    /// <para>
+    /// Extend this and add your collections as public properties
+    /// </para>
+    /// </summary>
     public abstract class CosmosDatabase
     {
-        private readonly IDocumentClient _documentClient;
         private readonly IDatabaseOptions _options;
 
         protected CosmosDatabase(IDatabaseOptions options)
             : this(new DocumentClient(new Uri(options.Endpoint), options.Key, connectionPolicy: CreateConnectionPolicy(options)), options)
         { }
-
-        public IDatabaseOperations Database { get => new DatabaseOperations(this, _documentClient); }
-
-        internal CosmosDatabase(IDocumentClient documentClient, IDatabaseOptions options)
-        {
-            _documentClient = documentClient;
-            _options = options;
-            SetupCollectionProperties();
-        }
 
         internal static ConnectionPolicy CreateConnectionPolicy(IDatabaseOptions options)
         {
@@ -33,48 +58,78 @@ namespace Spinit.CosmosDb
             return connectionPolicy;
         }
 
+        internal CosmosDatabase(IDocumentClient documentClient, IDatabaseOptions options)
+        {
+            DocumentClient = documentClient;
+            _options = options;
+            Initialize();
+        }
+
+        /// <summary>
+        /// Access to lowlevel document client
+        /// </summary>
+        public IDocumentClient DocumentClient { get; }
+
+        /// <summary>
+        /// Database model used
+        /// </summary>
+        public DatabaseModel Model { get; private set; }
+
+        /// <summary>
+        /// Database operations
+        /// </summary>
+        public IDatabaseOperations Operations { get => new DatabaseOperations(this, DocumentClient); }        
+
+        private protected virtual DatabaseModel CreateModel()
+        {
+            var databaseId = !string.IsNullOrEmpty(_options.DatabaseId)
+                ? _options.DatabaseId
+                : GetType().GetCustomAttribute<DatabaseIdAttribute>()?.DatabaseId ?? GetType().Name;
+
+            return new DatabaseModel()
+            {
+                DatabaseId = databaseId,
+                CollectionModels = GetCollectionProperties()
+                    .Select(x => new CollectionModel
+                    {
+                        DatabaseId = databaseId,
+                        CollectionId = x.GetCollectionId(),
+                        Analyzer = new DefaultAnalyzer()
+                    })
+                    .ToList()
+            };
+        }
+
+        private void Initialize()
+        {
+            Model = CreateModel();
+            SetupCollectionProperties();
+        }
+
         private void SetupCollectionProperties()
         {
             foreach (var collectionProperty in GetCollectionProperties())
             {
-                var collectionType = typeof(CosmosDbCollection<>).MakeGenericType(collectionProperty.PropertyType.GenericTypeArguments.Single());
-
-                var databaseId = GetDatabaseId();
-                var collectionId = GetCollectionId(collectionProperty);
-
                 var entityType = collectionProperty.PropertyType.GenericTypeArguments.Single();
-                var factoryMethod = typeof(CosmosDatabase).GetMethod(nameof(CreateCollection), BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(entityType);
-                var collectionInstance = factoryMethod.Invoke(this, new[] { databaseId, collectionId });
-                collectionProperty.SetValue(this, collectionInstance);
+                var setupCollectionPropertyMethod = typeof(CosmosDatabase).GetMethod(nameof(SetupCollectionProperty), BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(entityType);
+                setupCollectionPropertyMethod.Invoke(this, new object[] { collectionProperty });
             }
         }
 
-        private ICosmosDbCollection<TEntity> CreateCollection<TEntity>(string databaseId, string collectionId)
+        private void SetupCollectionProperty<TEntity>(PropertyInfo collectionProperty)
             where TEntity : class, ICosmosEntity
         {
-            return new CosmosDbCollection<TEntity>(_documentClient, databaseId, collectionId);
+            var collectionId = collectionProperty.GetCollectionId();
+            var collectionModel = Model.CollectionModels.Single(x => x.CollectionId == collectionId); // TODO: add indexed property => Model.CollectionModels[collectionId]
+            var collection = new CosmosDbCollection<TEntity>(DocumentClient, collectionModel);
+            collectionProperty.SetValue(this, collection);
         }
 
-        internal IEnumerable<PropertyInfo> GetCollectionProperties()
+        private IEnumerable<PropertyInfo> GetCollectionProperties()
         {
             return GetType().GetProperties().Where(x =>
                 x.PropertyType.IsGenericType &&
                 x.PropertyType.GetGenericTypeDefinition() == typeof(ICosmosDbCollection<>));
-        }
-
-        internal string GetDatabaseId()
-        {
-            return !string.IsNullOrEmpty(_options.DatabaseId)
-                ? _options.DatabaseId
-                : GetType().GetCustomAttribute<DatabaseIdAttribute>()?.DatabaseId ?? GetType().Name;
-        }
-
-        internal string GetCollectionId(PropertyInfo collectionPropertyInfo)
-        {
-            var result = collectionPropertyInfo.GetCustomAttribute<CollectionIdAttribute>()?.CollectionId;
-            if (string.IsNullOrEmpty(result))
-                return collectionPropertyInfo.Name;
-            return result;
         }
     }
 }

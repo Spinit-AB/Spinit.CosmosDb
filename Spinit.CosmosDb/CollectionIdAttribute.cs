@@ -10,6 +10,8 @@ namespace Spinit.CosmosDb
     {
         public CollectionIdAttribute(string collectionId)
         {
+            if (string.IsNullOrEmpty(collectionId))
+                throw new ArgumentNullException(nameof(collectionId));
             CollectionId = collectionId;
         }
 

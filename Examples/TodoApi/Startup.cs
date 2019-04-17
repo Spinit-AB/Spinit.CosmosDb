@@ -46,7 +46,7 @@ namespace TodoApi
                     return Task.CompletedTask;
                 });
 
-            app.ApplicationServices.GetRequiredService<TodoDatabase>().Database.CreateIfNotExistsAsync().GetAwaiter().GetResult();
+            app.ApplicationServices.GetRequiredService<TodoDatabase>().Operations.CreateIfNotExistsAsync().GetAwaiter().GetResult();
         }
     }
 }

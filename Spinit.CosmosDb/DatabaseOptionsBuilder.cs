@@ -6,7 +6,7 @@ namespace Spinit.CosmosDb
     public class DatabaseOptionsBuilder<TDatabase>
         where TDatabase : CosmosDatabase
     {
-        public DatabaseOptions<TDatabase> Options { get; private set; } = new DatabaseOptions<TDatabase> { };
+        public DatabaseOptions<TDatabase> Options { get; private set; } = new DatabaseOptions<TDatabase>();
 
         public DatabaseOptionsBuilder<TDatabase> UseConfiguration(IConfiguration configuration)
         {

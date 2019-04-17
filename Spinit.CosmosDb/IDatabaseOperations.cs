@@ -2,6 +2,7 @@
 
 namespace Spinit.CosmosDb
 {
+    // TODO: no need for this interface
     public interface IDatabaseOperations
     {
         /// <summary>

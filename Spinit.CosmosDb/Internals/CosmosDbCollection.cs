@@ -11,14 +11,12 @@ namespace Spinit.CosmosDb
         where TEntity : class, ICosmosEntity
     {
         private readonly IDocumentClient _documentClient;
-        private readonly string _databaseId;
-        private readonly string _collectionId;
+        private readonly CollectionModel _model;
 
-        public CosmosDbCollection(IDocumentClient documentClient, string databaseId, string collectionId)
+        public CosmosDbCollection(IDocumentClient documentClient, CollectionModel model)
         {
             _documentClient = documentClient;
-            _databaseId = databaseId;
-            _collectionId = collectionId;
+            _model = model;
         }
 
         public Task<SearchResponse<TEntity>> SearchAsync(ISearchRequest<TEntity> request) => SearchAsync<TEntity>(request);
@@ -59,7 +57,7 @@ namespace Spinit.CosmosDb
         {
             try
             {
-                var entry = new DbEntry<TEntity>(document);
+                var entry = new DbEntry<TEntity>(document, _model.Analyzer);
                 return _documentClient.UpsertDocumentAsync(GetCollectionUri(), entry, disableAutomaticIdGeneration: true);
             }
             catch (DocumentClientException)
@@ -91,9 +89,9 @@ namespace Spinit.CosmosDb
 
             if (!string.IsNullOrEmpty(request.Query))
             {
-                var terms = TermAnalyzer.Analyze(request.Query);
-                foreach (var term in terms)
-                    query = query.Where(x => x.All.Contains(term));
+                var tokens = _model.Analyzer.AnalyzeQuery(request.Query);
+                foreach (var token in tokens)
+                    query = query.Where(x => x.All.Contains(token));
             }
 
             if (request.Filter != null)
@@ -122,12 +120,12 @@ namespace Spinit.CosmosDb
 
         private Uri GetDocumentUri(string id)
         {
-            return UriFactory.CreateDocumentUri(_databaseId, _collectionId, id);
+            return UriFactory.CreateDocumentUri(_model.DatabaseId, _model.CollectionId, id);
         }
 
         private Uri GetCollectionUri()
         {
-            return UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
+            return UriFactory.CreateDocumentCollectionUri(_model.DatabaseId, _model.CollectionId);
         }
     }
 }

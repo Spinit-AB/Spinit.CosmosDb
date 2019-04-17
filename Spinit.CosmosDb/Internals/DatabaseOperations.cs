@@ -22,23 +22,24 @@ namespace Spinit.CosmosDb
         /// <returns></returns>
         public async Task CreateIfNotExistsAsync()
         {
-            var databaseId = _database.GetDatabaseId();
+            var databaseId = _database.Model.DatabaseId;
             var database = new Database
             {
                 Id = databaseId
             };
             await _documentClient.CreateDatabaseIfNotExistsAsync(database).ConfigureAwait(false);
-            foreach (var collectionProperty in _database.GetCollectionProperties())
+            foreach (var collectionModel in _database.Model.CollectionModels)
             {
                 await _documentClient.CreateDocumentCollectionIfNotExistsAsync(
                     UriFactory.CreateDatabaseUri(databaseId),
                     new DocumentCollection
                     {
-                        Id = _database.GetCollectionId(collectionProperty),
+                        Id = collectionModel.CollectionId,
                         PartitionKey = new PartitionKeyDefinition { Paths = new Collection<string> { "/id" } },
                         IndexingPolicy = new IndexingPolicy
                         {
                             IndexingMode = IndexingMode.Consistent,
+                            Automatic = true,
                             IncludedPaths = new Collection<IncludedPath>
                             {
                                 new IncludedPath
@@ -48,6 +49,15 @@ namespace Spinit.CosmosDb
                                     {
                                         new RangeIndex(DataType.Number, -1),
                                         new RangeIndex(DataType.String, -1)
+                                    }
+                                },
+                                new IncludedPath
+                                {
+                                    Path = "/_all/*",
+                                    Indexes = new Collection<Index>
+                                    {
+                                        new HashIndex(DataType.Number, -1),
+                                        new HashIndex(DataType.String, -1)
                                     }
                                 }
                             }
@@ -63,7 +73,7 @@ namespace Spinit.CosmosDb
         /// <returns></returns>
         public Task DeleteAsync()
         {
-            var databaseId = _database.GetDatabaseId();
+            var databaseId = _database.Model.DatabaseId;
             var database = new Database
             {
                 Id = databaseId

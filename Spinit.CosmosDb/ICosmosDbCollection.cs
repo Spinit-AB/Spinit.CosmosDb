@@ -39,6 +39,5 @@ namespace Spinit.CosmosDb
         /// <param name="id">The id of the entity to delete</param>
         /// <returns></returns>
         Task DeleteAsync(string id);
-        
     }
 }

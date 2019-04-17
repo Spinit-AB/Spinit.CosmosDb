@@ -10,13 +10,6 @@ namespace Spinit.CosmosDb.FunctionalTests
     [TestCaseOrderer("Spinit.CosmosDb.FunctionalTests.Infrastructure.TestCaseByAttributeOrderer", "Spinit.CosmosDb.FunctionalTests")]
     public class FunctionalTests : IClassFixture<FunctionalTests.TestDatabase>
     {
-        private const string ShouldSkip =
-#if DEBUG
-            null;
-#else
-            "Functional test should only run locally in debug mode";
-#endif
-
         private readonly TestDatabase _database;
 
         public FunctionalTests(TestDatabase database)
@@ -24,14 +17,14 @@ namespace Spinit.CosmosDb.FunctionalTests
             _database = database;
         }
 
-        [Fact(Skip = ShouldSkip)]
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         public async Task CreateDatabase()
         {
-            await _database.Database.CreateIfNotExistsAsync();
+            await _database.Operations.CreateIfNotExistsAsync();
         }
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task AddData(TodoItem todoItem)
@@ -39,7 +32,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             await _database.Todos.UpsertAsync(todoItem);
         }
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task UpdateDataWithTags(TodoItem todoItem)
@@ -48,7 +41,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             await _database.Todos.UpsertAsync(todoItem);
         }
 
-        [Fact(Skip = ShouldSkip)]
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         public async Task TestEmptySearch()
         {
@@ -57,7 +50,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Equal(expectedItemCount, result.Documents.Count());
         }
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestSearchOnTitle(TodoItem todoItem)
@@ -66,7 +59,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Single(result.Documents);
         }
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestSearchOnTitleWordsReversed(TodoItem todoItem)
@@ -76,7 +69,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Single(result.Documents);
         }
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestSearchFilterOnStatus(TodoItem todoItem)
@@ -85,7 +78,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Contains(result.Documents, x => x.Id == todoItem.Id);
         }
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestSearchWithProjection(TodoItem todoItem)
@@ -94,7 +87,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Contains(result.Documents, x => x.Id == todoItem.Id);
         }
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestGet(TodoItem todoItem)
@@ -104,7 +97,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Equal(todoItem.Id, result.Id);
         }
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestGetWithProjection(TodoItem todoItem)
@@ -114,7 +107,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Equal(todoItem.Id, result.Id);
         }
 
-        [Theory(Skip = ShouldSkip)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestDelete(TodoItem todoItem)
@@ -122,11 +115,11 @@ namespace Spinit.CosmosDb.FunctionalTests
             await _database.Todos.DeleteAsync(todoItem.Id);
         }
 
-        [Fact(Skip = ShouldSkip)]
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         public async Task DeleteDatabase()
         {
-            await _database.Database.DeleteAsync();
+            await _database.Operations.DeleteAsync();
         }
 
         public static TheoryData<TodoItem> GetTodoItems()
@@ -161,7 +154,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             private static string GenerateConnectionString()
             {
                 var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
-                return $"AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;DatabaseId={databaseId}";
+                return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
             }
 
             public ICosmosDbCollection<TodoItem> Todos { get; set; }

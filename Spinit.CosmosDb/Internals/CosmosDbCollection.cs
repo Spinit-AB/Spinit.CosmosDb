@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
@@ -110,7 +111,7 @@ namespace Spinit.CosmosDb
 
             return new SearchResponse<TProjection>
             {
-                ContinuationToken = feedResponse.ResponseContinuation,
+                ContinuationToken = EncodeContinuationToken(feedResponse.ResponseContinuation),
                 Documents = feedResponse.ToArray(),
                 TotalCount = request.IncludeTotalCount
                     ? await query.CountAsync().ConfigureAwait(false)
@@ -126,6 +127,14 @@ namespace Spinit.CosmosDb
         private Uri GetCollectionUri()
         {
             return UriFactory.CreateDocumentCollectionUri(_model.DatabaseId, _model.CollectionId);
+        }
+        
+        private string EncodeContinuationToken(string continuationToken)
+        {
+            if (string.IsNullOrEmpty(continuationToken))
+                return continuationToken;
+
+            return Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(continuationToken));
         }
     }
 }

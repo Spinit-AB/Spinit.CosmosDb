@@ -8,7 +8,7 @@
         Entity = 1,
 
         /// <summary>
-        /// Analyze tokens for a search quey
+        /// Analyze tokens for a search query
         /// </summary>
         Query = 2
     }

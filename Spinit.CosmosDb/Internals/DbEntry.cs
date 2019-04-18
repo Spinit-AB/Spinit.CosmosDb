@@ -9,12 +9,12 @@ namespace Spinit.CosmosDb
         public DbEntry()
         { }
 
-        public DbEntry(TEntity entity)
+        public DbEntry(TEntity entity, Analyzer analyzer)
         {
             Id = entity.Id;
             Original = entity;
             Normalized = entity.CreateNormalized();
-            All = TermAnalyzer.Analyze(entity.GetAllTextFieldValues());
+            All = analyzer.AnalyzeEntity(entity);
         }
 
         [JsonProperty(PropertyName = "id")]

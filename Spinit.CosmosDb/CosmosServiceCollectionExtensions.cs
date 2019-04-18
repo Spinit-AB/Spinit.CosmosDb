@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
+using Spinit.CosmosDb;
 
-// TODO: Move to Microsoft.Extensions.DependencyInjection namespace?
-namespace Spinit.CosmosDb
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class CosmosServiceCollectionExtensions
     {
@@ -12,7 +11,7 @@ namespace Spinit.CosmosDb
         /// </summary>
         /// <typeparam name="TDatabase"></typeparam>
         /// <param name="serviceCollection"></param>
-        /// <param name="options"></param>
+        /// <param name="connectionString">Cosmos db connection string</param>
         /// <returns></returns>
         public static IServiceCollection AddCosmosDatabase<TDatabase>(this IServiceCollection serviceCollection, string connectionString)
             where TDatabase : CosmosDatabase
@@ -29,7 +28,7 @@ namespace Spinit.CosmosDb
            where TDatabase : CosmosDatabase
         {
             serviceCollection
-                .AddSingleton<DatabaseOptions<TDatabase>>(sp =>
+                .AddSingleton(sp =>
                 {
                     var optionsBuilder = new DatabaseOptionsBuilder<TDatabase>();
                     options(optionsBuilder);

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using AutoFixture;
-using Spinit.CosmosDb.UnitTests.Helpers;
 using Xunit;
 
 namespace Spinit.CosmosDb.UnitTests
@@ -64,25 +62,6 @@ namespace Spinit.CosmosDb.UnitTests
                 public bool BoolProp { get; set; }
                 public double FloatProp { get; set; }
                 public DateTime DateTimeProp { get; set; }
-            }
-        }
-
-        public class GetAllTextFieldValuesTests
-        {
-            [Fact]
-            public void TestGetAllTextFieldValues()
-            {
-                var entity = new TestEntity
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "Name",
-                    Description = "Description"
-                };
-
-                var values = entity.GetAllTextFieldValues();
-                Assert.Equal(2, values.Count());
-                Assert.Contains(values, x => x == entity.Name);
-                Assert.Contains(values, x => x == entity.Description);
             }
         }
     }

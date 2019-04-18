@@ -6,7 +6,7 @@ namespace Spinit.CosmosDb
     public class DatabaseOptionsBuilder<TDatabase>
         where TDatabase : CosmosDatabase
     {
-        public DatabaseOptions<TDatabase> Options { get; private set; } = new DatabaseOptions<TDatabase> { };
+        public DatabaseOptions<TDatabase> Options { get; private set; } = new DatabaseOptions<TDatabase>();
 
         public DatabaseOptionsBuilder<TDatabase> UseConfiguration(IConfiguration configuration)
         {
@@ -21,6 +21,10 @@ namespace Spinit.CosmosDb
                 ConnectionString = connectionString
             };
 
+            var databaseId = connectionStringBuilder.ContainsKey("DatabaseId")
+                ? connectionStringBuilder["DatabaseId"].ToString()
+                : null;
+
             var preferredLocation = connectionStringBuilder.ContainsKey("PreferredLocation")
                 ? connectionStringBuilder["PreferredLocation"].ToString()
                 : null;
@@ -29,6 +33,7 @@ namespace Spinit.CosmosDb
             {
                 Endpoint = connectionStringBuilder["AccountEndpoint"].ToString(),
                 Key = connectionStringBuilder["AccountKey"].ToString(),
+                DatabaseId = databaseId,
                 PreferredLocation = preferredLocation
             };
             return this;

@@ -28,14 +28,14 @@ public class MyEntity : ICosmosEntity
     public string Description { get; set; }
 }
 
-[DatabaseId("MyDatabase")] // name of the cosmos database, required
+[DatabaseId("MyDatabase")] // name of the cosmos database, optional
 public class MyDatabase : CosmosDatabase
 {
     public MyDatabase(DatabaseOptions<MyDatabase> options)
         : base(options)
     { }
 
-    [CollectionId("MyEntities")] // name of the cosmos collection, required
+    [CollectionId("MyEntities")] // name of the cosmos collection, optional
     public ICosmosDbCollection<MyEntity> MyEntities { get; private set; }
 }
 ```

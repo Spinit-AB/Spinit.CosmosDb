@@ -100,6 +100,16 @@ namespace Spinit.CosmosDb.FunctionalTests
         [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
+        public async Task GetShouldReturnTitle(TodoItem todoItem)
+        {
+            var result = await _database.Todos.GetAsync(todoItem.Id);
+            Assert.NotNull(result);
+            Assert.NotEmpty(todoItem.Title);
+        }
+
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        [MemberData(nameof(GetTodoItems))]
         public async Task TestGetWithProjection(TodoItem todoItem)
         {
             var result = await _database.Todos.GetAsync<TodoItemProjection>(todoItem.Id);

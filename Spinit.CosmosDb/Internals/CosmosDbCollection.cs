@@ -50,8 +50,8 @@ namespace Spinit.CosmosDb
         public async Task<TProjection> GetAsync<TProjection>(string id)
             where TProjection : class, ICosmosEntity
         {
-            var response = await _documentClient.ReadDocumentAsync<TProjection>(GetDocumentUri(id), new RequestOptions { PartitionKey = new PartitionKey(id) }).ConfigureAwait(false);
-            return response.Document;
+            var response = await _documentClient.ReadDocumentAsync<DbEntry<TProjection>>(GetDocumentUri(id), new RequestOptions { PartitionKey = new PartitionKey(id) }).ConfigureAwait(false);
+            return response.Document.Original;
         }
 
         public Task UpsertAsync(TEntity document)
@@ -128,7 +128,7 @@ namespace Spinit.CosmosDb
         {
             return UriFactory.CreateDocumentCollectionUri(_model.DatabaseId, _model.CollectionId);
         }
-        
+
         private string EncodeContinuationToken(string continuationToken)
         {
             if (string.IsNullOrEmpty(continuationToken))

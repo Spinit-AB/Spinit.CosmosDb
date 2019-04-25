@@ -78,7 +78,8 @@ namespace Spinit.CosmosDb.FunctionalTests
 
             public void Dispose()
             {
-                Operations.DeleteAsync().GetAwaiter().GetResult();
+                if (FunctionTestsConfiguration.Enabled)
+                    Operations.DeleteAsync().GetAwaiter().GetResult();
             }
 
             public ICosmosDbCollection<TestEntity> TestEntities { get; set; }

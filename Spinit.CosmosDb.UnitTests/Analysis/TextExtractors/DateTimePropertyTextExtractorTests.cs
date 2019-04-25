@@ -11,7 +11,7 @@ namespace Spinit.CosmosDb.UnitTests.Analysis.TextExtractors
         [MemberData(nameof(GetScenarios))]
         public void ExtractTextShouldReturnExpectedValue(Scenario scenario)
         {
-            var extractor = new DateTimePropertyTextExtractor();
+            var extractor = new DateTimePropertyTextExtractor("yyyy-MM-dd HH:mm:ss");
             var result = extractor.ExtractText(scenario.Entity);
             Assert.Equal(scenario.ExpectedResult, result);
         }

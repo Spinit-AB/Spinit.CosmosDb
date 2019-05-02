@@ -52,7 +52,11 @@ namespace Spinit.CosmosDb
 
         internal static ConnectionPolicy CreateConnectionPolicy(IDatabaseOptions options)
         {
-            var connectionPolicy = new ConnectionPolicy();
+            var connectionPolicy = new ConnectionPolicy
+            {
+                ConnectionMode = ConnectionMode.Direct,
+                ConnectionProtocol = Protocol.Tcp
+            };
             if (!string.IsNullOrEmpty(options.PreferredLocation))
                 connectionPolicy.PreferredLocations.Add(options.PreferredLocation);
             return connectionPolicy;
@@ -78,7 +82,7 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Database operations
         /// </summary>
-        public IDatabaseOperations Operations { get => new DatabaseOperations(this, DocumentClient); }        
+        public IDatabaseOperations Operations { get => new DatabaseOperations(this, DocumentClient); }
 
         private protected virtual DatabaseModel CreateModel()
         {

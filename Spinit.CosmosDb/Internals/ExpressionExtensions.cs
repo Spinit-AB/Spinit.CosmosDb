@@ -39,7 +39,7 @@ namespace Spinit.CosmosDb
 
             protected override Expression VisitMember(MemberExpression node)
             {
-                if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter && node.Expression.Type == typeof(TSource))
+                if (node.Expression != null && (node.Expression.NodeType == ExpressionType.Parameter || node.Expression.NodeType == ExpressionType.Convert) && (node.Expression.Type == typeof(TSource) || node.Expression.Type.IsAssignableFrom(typeof(TSource))))
                     return Expression.PropertyOrField(Visit(_selector.Body), node.Member.Name);
                 else
                     return base.VisitMember(node);
@@ -48,6 +48,11 @@ namespace Spinit.CosmosDb
             protected override Expression VisitLambda<T>(Expression<T> node)
             {
                 return Expression.Lambda<Func<TTarget, TResult>>(Visit(node.Body), _selector.Parameters);
+            }
+
+            public override Expression Visit(Expression node)
+            {
+                return base.Visit(node);
             }
 
             protected override Expression VisitParameter(ParameterExpression node)

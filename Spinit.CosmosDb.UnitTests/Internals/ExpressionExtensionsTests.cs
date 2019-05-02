@@ -55,12 +55,38 @@ namespace Spinit.CosmosDb.UnitTests
                 Assert.DoesNotContain(list.AsQueryable().Where(result), x => x.Id == "ShouldNotBeFound");
             }
 
-            private class MyEntity : ICosmosEntity
+            [Fact]
+            public void TestInterfaceConversion()
+            {
+                var expression = new Filterer<MyEntity>().Filter();
+                var predicate = expression.RemapTo<DbEntry<MyEntity>, MyEntity, bool>(x => x.Original);
+                var list = new List<DbEntry<MyEntity>>
+                {
+                    new DbEntry<MyEntity>(new MyEntity {  CreatedDate = new DateTime(2017, 01, 01) }, new DefaultAnalyzer()),
+                    new DbEntry<MyEntity>(new MyEntity {  CreatedDate = new DateTime(2019, 01, 01) }, new DefaultAnalyzer())
+                };
+
+                var result = list.AsQueryable().Where(predicate);
+                Assert.Contains(result, x => x.Original.CreatedDate.Year == 2017);
+                Assert.DoesNotContain(result, x => x.Original.CreatedDate.Year == 2019);
+            }
+
+            private class MyEntity : ICosmosEntity, IPartialInterface
             {
                 public string Id { get; set; }
                 public DateTime CreatedDate { get; set; }
                 public DateTime? ModifiedDate { get; set; }
                 public string MyEntityProp { get; set; }
+            }
+
+            public class Filterer<T> where T : IPartialInterface
+            {
+                public Expression<Func<T, bool>> Filter() => x => x.CreatedDate < new DateTime(2018, 01, 01);
+            }
+
+            public interface IPartialInterface
+            {
+                DateTime CreatedDate { get; }
             }
         }
     }

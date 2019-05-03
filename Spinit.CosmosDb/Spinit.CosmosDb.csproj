@@ -17,6 +17,8 @@
     <PackageLicenseUrl>https://github.com/Spinit-AB/Spinit.CosmosDb/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Spinit-AB/Spinit.CosmosDb</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Spinit-AB/Spinit.CosmosDb</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>

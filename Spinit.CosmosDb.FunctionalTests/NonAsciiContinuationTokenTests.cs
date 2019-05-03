@@ -14,15 +14,15 @@ namespace Spinit.CosmosDb.FunctionalTests
         public async Task ShouldBeAbleToIterateOverAllPages()
         {
             var database = new TestDatabase();
-            //await database.Operations.CreateIfNotExistsAsync();
+            await database.Operations.CreateIfNotExistsAsync();
             try
             {
                 var entityCount = 100;
-                //var entities = Enumerable.Range(1, entityCount).Select(x => new TestEntity { Id = x.ToString(), Title = "åäö" });
-                //foreach (var entity in entities)
-                //{
-                //    await database.TestEntities.UpsertAsync(entity);
-                //}
+                var entities = Enumerable.Range(1, entityCount).Select(x => new TestEntity { Id = x.ToString(), Title = "åäö" });
+                foreach (var entity in entities)
+                {
+                    await database.TestEntities.UpsertAsync(entity);
+                }
 
                 string continuationToken = null;
                 var fetchedItems = 0;
@@ -43,7 +43,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             }
             finally
             {
-                //await database.Operations.DeleteAsync();
+                await database.Operations.DeleteAsync();
             }
         }
 
@@ -55,7 +55,7 @@ namespace Spinit.CosmosDb.FunctionalTests
 
             private static string GenerateConnectionString()
             {
-                var databaseId = "db-33545afd8c2d487691097e2f778cc563"; // $"db-{Guid.NewGuid().ToString("N")}";
+                var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
                 return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
             }
 

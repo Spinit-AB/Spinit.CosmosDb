@@ -1,5 +1,8 @@
 Spinit.CosmosDb
 ===============
+![GitHub](https://img.shields.io/github/license/Spinit-AB/Spinit.CosmosDb.svg)
+[![Build Status](https://dev.azure.com/spinitforce/GitHub/_apis/build/status/Spinit-AB.Spinit.CosmosDb?branchName=master)](https://dev.azure.com/spinitforce/GitHub/_build/latest?definitionId=7&branchName=master)
+![Nuget](https://img.shields.io/nuget/v/Spinit.CosmosDb.svg)
 
 Lightweight CosmosDb wrapper
 

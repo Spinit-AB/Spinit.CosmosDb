@@ -7,7 +7,7 @@ namespace Spinit.CosmosDb.UnitTests.Infrastructure
     {
         private static readonly JsonSerializerSettings settings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Objects
+            TypeNameHandling = TypeNameHandling.All
         };
 
         public void Deserialize(IXunitSerializationInfo info)

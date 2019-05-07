@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
+using Newtonsoft.Json;
 
 namespace Spinit.CosmosDb
 {
@@ -47,7 +48,14 @@ namespace Spinit.CosmosDb
         private readonly IDatabaseOptions _options;
 
         protected CosmosDatabase(IDatabaseOptions options)
-            : this(new DocumentClient(new Uri(options.Endpoint), options.Key, connectionPolicy: CreateConnectionPolicy(options)), options)
+            : this(new DocumentClient(
+                new Uri(options.Endpoint), 
+                options.Key, 
+                connectionPolicy: CreateConnectionPolicy(options), 
+                serializerSettings: new JsonSerializerSettings
+                {
+                    DateParseHandling = DateParseHandling.DateTimeOffset,
+                }), options)
         { }
 
         internal static ConnectionPolicy CreateConnectionPolicy(IDatabaseOptions options)

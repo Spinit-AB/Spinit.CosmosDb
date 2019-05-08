@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Spinit.CosmosDb
 {
@@ -48,14 +49,13 @@ namespace Spinit.CosmosDb
         private readonly IDatabaseOptions _options;
 
         protected CosmosDatabase(IDatabaseOptions options)
-            : this(new DocumentClient(
-                new Uri(options.Endpoint), 
-                options.Key, 
-                connectionPolicy: CreateConnectionPolicy(options), 
-                serializerSettings: new JsonSerializerSettings
-                {
-                    DateParseHandling = DateParseHandling.DateTimeOffset,
-                }), options)
+            : this(
+                new DocumentClient(
+                    new Uri(options.Endpoint),
+                    options.Key,
+                    connectionPolicy: CreateConnectionPolicy(options),
+                    serializerSettings: CreateJsonSerializerSettings()
+                ), options)
         { }
 
         internal static ConnectionPolicy CreateConnectionPolicy(IDatabaseOptions options)
@@ -68,6 +68,18 @@ namespace Spinit.CosmosDb
             if (!string.IsNullOrEmpty(options.PreferredLocation))
                 connectionPolicy.PreferredLocations.Add(options.PreferredLocation);
             return connectionPolicy;
+        }
+
+        internal static JsonSerializerSettings CreateJsonSerializerSettings()
+        {
+            return new JsonSerializerSettings
+            {
+                DateParseHandling = DateParseHandling.None,
+                Converters = new[]
+                {
+                    new IsoDateTimeConverter()
+                }
+            };
         }
 
         internal CosmosDatabase(IDocumentClient documentClient, IDatabaseOptions options)

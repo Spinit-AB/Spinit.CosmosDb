@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.136
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spinit.CosmosDb", "Spinit.CosmosDb\Spinit.CosmosDb.csproj", "{40EC2E59-8CA4-4E33-B884-1DF26E42B378}"
 EndProject
@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoApi", "TodoApi", "{9269
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoApi", "Examples\TodoApi\TodoApi.csproj", "{8E61C596-01C7-4698-B326-485B1C9E7020}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spinit.CosmosDb.FunctionalTests", "Spinit.CosmosDb.FunctionalTests\Spinit.CosmosDb.FunctionalTests.csproj", "{0D78AA6C-0471-430B-8985-B3875C0D8B04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spinit.CosmosDb.FunctionalTests", "Spinit.CosmosDb.FunctionalTests\Spinit.CosmosDb.FunctionalTests.csproj", "{0D78AA6C-0471-430B-8985-B3875C0D8B04}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

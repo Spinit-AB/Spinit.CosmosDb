@@ -35,7 +35,7 @@ else
 {
     $now = (Get-Date).ToUniversalTime()
     $VersionPrefix = ([Version]$now.ToString("0.yyyy.MMdd.HHmm")).ToString(4)
-    $VersionSuffix = "ci$($env:BUILD_SOURCEVERSION)"
+    $VersionSuffix = "ci$($env:BUILD_SOURCEVERSION.SubString(0,7))"
     $Version = $VersionPrefix + '-' + $VersionSuffix
 }
 
@@ -48,4 +48,3 @@ Write-Host "##vso[task.setvariable variable=Version;]$Version"
 Write-Host "VersionPrefix = $VersionPrefix"
 Write-Host "VersionSuffix = $VersionSuffix"
 Write-Host "Version = $Version"
-      

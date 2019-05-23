@@ -25,6 +25,13 @@ steps:
     failOnStderr: true
     filePath: $(Build.SourcesDirectory)/set-version-variables.ps1
 
+- task: PowerShell@2
+  displayName: Update build number
+  inputs:
+    targetType: filePath
+    failOnStderr: true
+    filePath: $(Build.SourcesDirectory)/update-build-number.ps1
+
 - task: DotNetCoreCLI@2
   displayName: .NET Core Restore
   inputs:

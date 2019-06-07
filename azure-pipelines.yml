@@ -34,6 +34,7 @@ steps:
 
 - task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
   displayName: 'Run Azure Cosmos DB Emulator container'
+  enabled: false
 
 - task: DotNetCoreCLI@2
   displayName: .NET Core Restore

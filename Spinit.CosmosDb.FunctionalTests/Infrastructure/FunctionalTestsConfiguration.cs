@@ -5,7 +5,7 @@ namespace Spinit.CosmosDb.FunctionalTests
     internal static class FunctionalTestsConfiguration
     {
         private const string DefaultEmulatorConnectionString = "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
-        private const string EnvironmentVariableName = "Spinit.CosmosDb.FunctionalTests.ConnectionString";
+        private const string EnvironmentVariableName = "SPINIT_COSMOSDB_FUNCTIONALTESTS_CONNECTIONSTRING";
 
         public static string CosmosDbConnectionString
         {

@@ -19,6 +19,9 @@ variables:
   Spinit.CosmosDb.FunctionalTests.ConnectionString: AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==
 
 steps:
+- task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
+  displayName: 'Run Azure Cosmos DB Emulator container'
+
 - task: PowerShell@2
   displayName: Set version variables
   inputs:
@@ -32,10 +35,6 @@ steps:
     targetType: filePath
     failOnStderr: true
     filePath: $(Build.SourcesDirectory)/update-build-number.ps1
-
-- task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
-  displayName: 'Run Azure Cosmos DB Emulator container'
-  enabled: false
 
 - task: DotNetCoreCLI@2
   displayName: .NET Core Restore

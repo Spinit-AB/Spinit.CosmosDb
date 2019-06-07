@@ -12,7 +12,7 @@ pr:
     - master
 
 pool:  
-  vmImage: ubuntu-latest
+  vmImage: win1803
 
 variables:
   BuildConfiguration: Release

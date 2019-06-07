@@ -32,6 +32,9 @@ steps:
     failOnStderr: true
     filePath: $(Build.SourcesDirectory)/update-build-number.ps1
 
+- task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
+  displayName: 'Run Azure Cosmos DB Emulator container'
+
 - task: DotNetCoreCLI@2
   displayName: .NET Core Restore
   inputs:

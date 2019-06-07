@@ -27,14 +27,14 @@ namespace Spinit.CosmosDb.FunctionalTests
                     _database.TestEntities.UpsertAsync(_input).GetAwaiter().GetResult();
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
                     Assert.Equal(_input.DateTime, output.DateTime);
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task KindShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
@@ -61,14 +61,14 @@ namespace Spinit.CosmosDb.FunctionalTests
                     _database.TestEntities.UpsertAsync(_input).GetAwaiter().GetResult();
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
                     Assert.Equal(_input.DateTime, output.DateTime);
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task KindShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
@@ -98,14 +98,14 @@ namespace Spinit.CosmosDb.FunctionalTests
                     _database.TestEntities.UpsertAsync(_input).GetAwaiter().GetResult();
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
                     Assert.Equal(_input.DateTimeOffset, output.DateTimeOffset);
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task OffsetShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
@@ -132,14 +132,14 @@ namespace Spinit.CosmosDb.FunctionalTests
                     _database.TestEntities.UpsertAsync(_input).GetAwaiter().GetResult();
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
                     Assert.Equal(_input.DateTimeOffset, output.DateTimeOffset);
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task OffsetShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
@@ -168,14 +168,14 @@ namespace Spinit.CosmosDb.FunctionalTests
                     _database.TestEntities.UpsertAsync(_input).GetAwaiter().GetResult();
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
                     Assert.Equal(_input.DateTimeOffset, output.DateTimeOffset);
                 }
 
-                [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+                [Fact]
                 public async Task OffsetShouldBePreserved()
                 {
                     var output = await _database.TestEntities.GetAsync(_input.Id);
@@ -192,19 +192,19 @@ namespace Spinit.CosmosDb.FunctionalTests
             public TestDatabase()
                 : base(new DatabaseOptionsBuilder<TestDatabase>().UseConnectionString(GenerateConnectionString()).Options)
             {
-                if (FunctionTestsConfiguration.Enabled)
+                if (FunctionalTestsConfiguration.Enabled)
                     Operations.CreateIfNotExistsAsync().GetAwaiter().GetResult();
             }
 
             private static string GenerateConnectionString()
             {
                 var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
-                return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
+                return $"{FunctionalTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
             }
 
             public void Dispose()
             {
-                if (FunctionTestsConfiguration.Enabled)
+                if (FunctionalTestsConfiguration.Enabled)
                     Operations.DeleteAsync().GetAwaiter().GetResult();
             }
 

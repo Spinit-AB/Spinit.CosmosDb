@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Spinit.CosmosDb
 {
@@ -22,6 +23,13 @@ namespace Spinit.CosmosDb
         Task<TEntity> GetAsync(string id);
         Task<TProjection> GetAsync<TProjection>(string id)
             where TProjection : class, ICosmosEntity;
+
+        /// <summary>
+        /// Bulk imports and/or updates a list of entities.
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <returns></returns>
+        Task BulkUpsertAsync(IEnumerable<TEntity> entities);
 
         /// <summary>
         /// Adds or updates an entity

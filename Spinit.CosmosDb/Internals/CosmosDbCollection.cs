@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.CosmosDB.BulkExecutor;
+using Microsoft.Azure.CosmosDB.BulkExecutor.BulkImport;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
@@ -55,6 +58,27 @@ namespace Spinit.CosmosDb
             return response.Document.Original;
         }
 
+        public async Task BulkUpsertAsync(IEnumerable<TEntity> entities)
+        {
+            var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
+
+            var bulkExecutor = new BulkExecutor(_documentClient as DocumentClient, documentCollection);
+            await bulkExecutor.InitializeAsync().ConfigureAwait(false);
+
+            var entries = entities.Select(x => new DbEntry<TEntity>(x, _model.Analyzer));
+
+            BulkImportResponse bulkImportResponse = null;
+            do
+            {
+                bulkImportResponse = await bulkExecutor
+                    .BulkImportAsync(
+                        entries,
+                        enableUpsert: true,
+                        disableAutomaticIdGeneration: true)
+                    .ConfigureAwait(false);
+            } while (bulkImportResponse.NumberOfDocumentsImported < entries.Count());
+        }
+
         public Task UpsertAsync(TEntity document)
         {
             try
@@ -76,6 +100,8 @@ namespace Spinit.CosmosDb
                 PartitionKey = new PartitionKey(id)
             });
         }
+
+
 
         internal protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)
             where TProjection : class, ICosmosEntity

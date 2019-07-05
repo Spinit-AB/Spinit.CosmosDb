@@ -26,10 +26,10 @@ namespace Spinit.CosmosDb.FunctionalTests
 
         [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
-        [MemberData(nameof(GetTodoItems))]
-        public async Task AddData(TodoItem todoItem)
+        [MemberData(nameof(GetTodoItemList))]
+        public async Task AddData(IEnumerable<TodoItem> todoItem)
         {
-            await _database.Todos.UpsertAsync(todoItem);
+            await _database.Todos.BulkUpsertAsync(todoItem);
         }
 
         [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
@@ -132,10 +132,11 @@ namespace Spinit.CosmosDb.FunctionalTests
             await _database.Operations.DeleteAsync();
         }
 
-        public static TheoryData<TodoItem> GetTodoItems()
+        public static IEnumerable<TodoItem> GetItems()
         {
-            var result = new TheoryData<TodoItem>();
             const int recordCount = 10;
+            var result = new List<TodoItem>();
+
             Enumerable.Range(1, recordCount).ToList().ForEach(x =>
             {
                 var todoStatus = (x / (double)recordCount) < 0.3
@@ -152,6 +153,26 @@ namespace Spinit.CosmosDb.FunctionalTests
                     Description = $"Title for item {x}"
                 });
             });
+
+            return result;
+        }
+
+        public static TheoryData<IEnumerable<TodoItem>> GetTodoItemList()
+        {
+            return new TheoryData<IEnumerable<TodoItem>>()
+            {
+                GetItems()
+            };
+        }
+
+        public static TheoryData<TodoItem> GetTodoItems()
+        {
+            var result = new TheoryData<TodoItem>();
+            GetItems().ToList().ForEach(item =>
+            {
+                result.Add(item);
+            });
+
             return result;
         }
 

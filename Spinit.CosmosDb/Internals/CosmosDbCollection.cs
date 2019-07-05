@@ -58,32 +58,24 @@ namespace Spinit.CosmosDb
             return response.Document.Original;
         }
 
-        public async Task BulkUpsertAsync(IEnumerable<TEntity> documents)
+        public async Task BulkUpsertAsync(IEnumerable<TEntity> entities)
         {
             var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
 
             var bulkExecutor = new BulkExecutor(_documentClient as DocumentClient, documentCollection);
             await bulkExecutor.InitializeAsync().ConfigureAwait(false);
 
-            var entries = documents.Select(x => new DbEntry<TEntity>(x, _model.Analyzer));
+            var entries = entities.Select(x => new DbEntry<TEntity>(x, _model.Analyzer));
 
             BulkImportResponse bulkImportResponse = null;
             do
             {
-                try
-                {
-                    bulkImportResponse = await bulkExecutor
-                        .BulkImportAsync(
-                            entries,
-                            enableUpsert: true,
-                            disableAutomaticIdGeneration: true)
-                        .ConfigureAwait(false);
-                }
-                catch (DocumentClientException)
-                {
-                    // TODO: handle HTTP 429 (Too Many Requests) errors
-                    throw;
-                }
+                bulkImportResponse = await bulkExecutor
+                    .BulkImportAsync(
+                        entries,
+                        enableUpsert: true,
+                        disableAutomaticIdGeneration: true)
+                    .ConfigureAwait(false);
             } while (bulkImportResponse.NumberOfDocumentsImported < entries.Count());
         }
 

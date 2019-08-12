@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.CosmosDB.BulkExecutor;
+using Microsoft.Azure.CosmosDB.BulkExecutor.BulkDelete;
 using Microsoft.Azure.CosmosDB.BulkExecutor.BulkImport;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
@@ -54,11 +57,18 @@ namespace Spinit.CosmosDb
         public async Task<TProjection> GetAsync<TProjection>(string id)
             where TProjection : class, ICosmosEntity
         {
-            var response = await _documentClient.ReadDocumentAsync<DbEntry<TProjection>>(GetDocumentUri(id), new RequestOptions { PartitionKey = new PartitionKey(id) }).ConfigureAwait(false);
-            return response.Document.Original;
+            try
+            {
+                var response = await _documentClient.ReadDocumentAsync<DbEntry<TProjection>>(GetDocumentUri(id), new RequestOptions { PartitionKey = new PartitionKey(id) }).ConfigureAwait(false);
+                return response.Document.Original;
+            }
+            catch (DocumentClientException e) when (e.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
         }
 
-        public async Task BulkUpsertAsync(IEnumerable<TEntity> entities)
+        public async Task UpsertAsync(IEnumerable<TEntity> entities)
         {
             var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
 
@@ -101,7 +111,23 @@ namespace Spinit.CosmosDb
             });
         }
 
+        public async Task DeleteAsync(IEnumerable<string> ids)
+        {
+            var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
 
+            var bulkExecutor = new BulkExecutor(_documentClient as DocumentClient, documentCollection);
+            await bulkExecutor.InitializeAsync().ConfigureAwait(false);
+
+            var entries = ids.Select(x => new Tuple<string, string>(x, x)).ToList();
+
+            BulkDeleteResponse bulkDeleteResponse = null;
+            do
+            {
+                bulkDeleteResponse = await bulkExecutor
+                    .BulkDeleteAsync(entries)
+                    .ConfigureAwait(false);
+            } while (bulkDeleteResponse.NumberOfDocumentsDeleted < entries.Count());
+        }
 
         internal protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)
             where TProjection : class, ICosmosEntity

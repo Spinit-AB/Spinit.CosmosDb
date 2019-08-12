@@ -126,7 +126,7 @@ namespace Spinit.CosmosDb
                 bulkDeleteResponse = await bulkExecutor
                     .BulkDeleteAsync(entries)
                     .ConfigureAwait(false);
-            } while (bulkDeleteResponse.NumberOfDocumentsDeleted < entries.Count());
+            } while (bulkDeleteResponse.NumberOfDocumentsDeleted < entries.Count);
         }
 
         internal protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents;
 using Spinit.CosmosDb.FunctionalTests.Infrastructure;
 using Xunit;
 
@@ -27,9 +28,9 @@ namespace Spinit.CosmosDb.FunctionalTests
         [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         [MemberData(nameof(GetTodoItemList))]
-        public async Task AddData(IEnumerable<TodoItem> todoItem)
+        public async Task AddData(IEnumerable<TodoItem> todoItems)
         {
-            await _database.Todos.BulkUpsertAsync(todoItem);
+            await _database.Todos.UpsertAsync(todoItems);
         }
 
         [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
@@ -123,6 +124,29 @@ namespace Spinit.CosmosDb.FunctionalTests
         public async Task TestDelete(TodoItem todoItem)
         {
             await _database.Todos.DeleteAsync(todoItem.Id);
+
+            var result = await _database.Todos.GetAsync(todoItem.Id);
+            Assert.Null(result);
+        }
+
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        [MemberData(nameof(GetTodoItemList))]
+        public async Task TestBulkDelete(IEnumerable<TodoItem> todoItems)
+        {
+            await _database.Todos.UpsertAsync(todoItems);
+            foreach (var todoItem in todoItems)
+            {
+                var result = await _database.Todos.GetAsync(todoItem.Id);
+                Assert.NotNull(result);
+            }
+
+            await _database.Todos.DeleteAsync(todoItems.Select(x => x.Id));
+            foreach (var todoItem in todoItems)
+            {
+                var result = await _database.Todos.GetAsync(todoItem.Id);
+                Assert.Null(result);
+            }
         }
 
         [Fact(Skip = FunctionTestsConfiguration.SkipTests)]

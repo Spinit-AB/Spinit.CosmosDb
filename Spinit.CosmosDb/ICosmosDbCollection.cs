@@ -29,7 +29,7 @@ namespace Spinit.CosmosDb
         /// </summary>
         /// <param name="entities"></param>
         /// <returns></returns>
-        Task BulkUpsertAsync(IEnumerable<TEntity> entities);
+        Task UpsertAsync(IEnumerable<TEntity> entities);
 
         /// <summary>
         /// Adds or updates an entity
@@ -47,5 +47,12 @@ namespace Spinit.CosmosDb
         /// <param name="id">The id of the entity to delete</param>
         /// <returns></returns>
         Task DeleteAsync(string id);
+
+        /// <summary>
+        /// Deletes a list of entities.
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        Task DeleteAsync(IEnumerable<string> ids);
     }
 }

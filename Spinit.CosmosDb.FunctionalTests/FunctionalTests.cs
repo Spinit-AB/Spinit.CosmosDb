@@ -149,6 +149,34 @@ namespace Spinit.CosmosDb.FunctionalTests
             }
         }
 
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        [MemberData(nameof(GetTodoItemList))]
+        public async Task TestBulkDeleteWhenOneIdMissing(IEnumerable<TodoItem> todoItems)
+        {
+            var missingId = todoItems.First().Id;
+            await _database.Todos.UpsertAsync(todoItems.Skip(1));
+            foreach (var todoItem in todoItems.Skip(1))
+            {
+                var result = await _database.Todos.GetAsync(todoItem.Id);
+                Assert.NotNull(result);
+            }
+
+            await _database.Todos.DeleteAsync(todoItems.Select(x => x.Id));
+            foreach (var todoItem in todoItems)
+            {
+                var result = await _database.Todos.GetAsync(todoItem.Id);
+                if (todoItem.Id == missingId)
+                {
+                    Assert.NotNull(todoItem);
+                }
+                else
+                {
+                    Assert.Null(result);
+                }
+            }
+        }
+
         [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         public async Task DeleteDatabase()

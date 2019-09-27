@@ -9,23 +9,22 @@ using Xunit;
 namespace Spinit.CosmosDb.FunctionalTests
 {
     [TestCaseOrderer("Spinit.CosmosDb.FunctionalTests.Infrastructure.TestCaseByAttributeOrderer", "Spinit.CosmosDb.FunctionalTests")]
-    public class FunctionalTests : IClassFixture<FunctionalTests.TestDatabase>
+    public class FunctionalTests : IClassFixture<CosmosDbFixture<FunctionalTests.TestDatabase>>
     {
         private readonly TestDatabase _database;
 
-        public FunctionalTests(TestDatabase database)
+        public FunctionalTests(CosmosDbFixture<TestDatabase> databaseFixture)
         {
-            _database = database;
+            _database = databaseFixture.Database;
         }
 
-        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
-        [TestOrder]
-        public async Task CreateDatabase()
-        {
-            await _database.Operations.CreateIfNotExistsAsync();
-        }
+        //[TestOrder]
+        //public async Task CreateDatabase()
+        //{
+        //    await _database.Operations.CreateIfNotExistsAsync();
+        //}
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItemList))]
         public async Task AddData(IEnumerable<TodoItem> todoItems)
@@ -33,7 +32,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             await _database.Todos.UpsertAsync(todoItems);
         }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task UpdateDataWithTags(TodoItem todoItem)
@@ -42,7 +41,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             await _database.Todos.UpsertAsync(todoItem);
         }
 
-        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Fact]
         [TestOrder]
         public async Task TestEmptySearch()
         {
@@ -51,7 +50,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Equal(expectedItemCount, result.Documents.Count());
         }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestSearchOnTitle(TodoItem todoItem)
@@ -60,7 +59,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Single(result.Documents);
         }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestSearchOnTitleWordsReversed(TodoItem todoItem)
@@ -70,7 +69,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Single(result.Documents);
         }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestSearchFilterOnStatus(TodoItem todoItem)
@@ -79,7 +78,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Contains(result.Documents, x => x.Id == todoItem.Id);
         }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestSearchWithProjection(TodoItem todoItem)
@@ -88,7 +87,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Contains(result.Documents, x => x.Id == todoItem.Id);
         }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestGet(TodoItem todoItem)
@@ -98,7 +97,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Equal(todoItem.Id, result.Id);
         }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task GetShouldReturnTitle(TodoItem todoItem)
@@ -108,7 +107,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.NotEmpty(todoItem.Title);
         }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestGetWithProjection(TodoItem todoItem)
@@ -118,7 +117,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             Assert.Equal(todoItem.Id, result.Id);
         }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetTodoItems))]
         public async Task TestDelete(TodoItem todoItem)
@@ -177,12 +176,11 @@ namespace Spinit.CosmosDb.FunctionalTests
             }
         }
 
-        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
-        [TestOrder]
-        public async Task DeleteDatabase()
-        {
-            await _database.Operations.DeleteAsync();
-        }
+        //[TestOrder]
+        //public async Task DeleteDatabase()
+        //{
+        //    await _database.Operations.DeleteAsync();
+        //}
 
         public static IEnumerable<TodoItem> GetItems()
         {
@@ -230,15 +228,20 @@ namespace Spinit.CosmosDb.FunctionalTests
 
         public class TestDatabase : CosmosDatabase
         {
-            public TestDatabase()
-                : base(new DatabaseOptionsBuilder<TestDatabase>().UseConnectionString(GenerateConnectionString()).Options)
-            { }
-
-            private static string GenerateConnectionString()
+            public TestDatabase(IDatabaseOptions options)
+                : base(options)
             {
-                var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
-                return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
             }
+
+            //public TestDatabase()
+            //    : base(new DatabaseOptionsBuilder<TestDatabase>().UseConnectionString(GenerateConnectionString()).Options)
+            //{ }
+
+            //private static string GenerateConnectionString()
+            //{
+            //    var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
+            //    return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
+            //}
 
             public ICosmosDbCollection<TodoItem> Todos { get; set; }
         }

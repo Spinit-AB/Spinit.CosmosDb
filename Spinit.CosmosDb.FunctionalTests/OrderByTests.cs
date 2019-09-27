@@ -14,16 +14,16 @@ namespace Spinit.CosmosDb.FunctionalTests
         public OrderByTests(TestDatabase database)
         {
             _database = database;
-            if (!FunctionTestsConfiguration.Enabled)
+            if (!FunctionalTestsConfiguration.Enabled)
                 return;
             _database.Operations.CreateIfNotExistsAsync().GetAwaiter().GetResult();
             foreach (var entity in GetEntities().Select(x => (TestEntity)x.First()))
             {
                 _database.TestEntities.UpsertAsync(entity).GetAwaiter().GetResult();
             }
-        }       
+        }
 
-        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory]
         [TestOrder]
         [MemberData(nameof(GetEntities))]
         public async Task OrderShouldBeAsExcpected(TestEntity entity)
@@ -73,12 +73,12 @@ namespace Spinit.CosmosDb.FunctionalTests
             private static string GenerateConnectionString()
             {
                 var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
-                return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
+                return $"{FunctionalTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
             }
 
             public void Dispose()
             {
-                if (FunctionTestsConfiguration.Enabled)
+                if (FunctionalTestsConfiguration.Enabled)
                     Operations.DeleteAsync().GetAwaiter().GetResult();
             }
 

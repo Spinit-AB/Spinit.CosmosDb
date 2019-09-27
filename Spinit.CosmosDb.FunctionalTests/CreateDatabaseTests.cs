@@ -15,14 +15,14 @@ namespace Spinit.CosmosDb.FunctionalTests
             _database = database;
         }
 
-        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Fact]
         [TestOrder]
         public async Task TestCreateDatabase()
         {
             await _database.Operations.CreateIfNotExistsAsync();
         }
 
-        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Fact]
         [TestOrder]
         public async Task TestDeleteDatabase()
         {
@@ -38,7 +38,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             private static string GenerateConnectionString()
             {
                 var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
-                return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId ={databaseId}";
+                return $"{FunctionalTestsConfiguration.CosmosDbConnectionString};DatabaseId ={databaseId}";
             }
 
             public ICosmosDbCollection<DummyEntity> Dummies { get; set; }

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -9,8 +7,7 @@ namespace Spinit.CosmosDb.FunctionalTests
 {
     public class NonAsciiContinuationTokenTests
     {
-
-        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Fact]
         public async Task ShouldBeAbleToIterateOverAllPages()
         {
             var database = new TestDatabase();
@@ -56,12 +53,12 @@ namespace Spinit.CosmosDb.FunctionalTests
             private static string GenerateConnectionString()
             {
                 var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
-                return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
+                return $"{FunctionalTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
             }
 
             public void Dispose()
             {
-                if (FunctionTestsConfiguration.Enabled)
+                if (FunctionalTestsConfiguration.Enabled)
                     Operations.DeleteAsync().GetAwaiter().GetResult();
             }
 

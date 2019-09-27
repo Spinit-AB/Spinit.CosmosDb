@@ -6,7 +6,7 @@ namespace Spinit.CosmosDb.FunctionalTests
 {
     public class CustomAnalyzerTests
     {
-        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Fact]
         public async Task TestCustomAnalyser()
         {
             var database = new TestDatabase();
@@ -32,7 +32,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             private static string GenerateConnectionString()
             {
                 var databaseId = $"db-{Guid.NewGuid().ToString("N")}";
-                return $"{FunctionTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
+                return $"{FunctionalTestsConfiguration.CosmosDbConnectionString};DatabaseId={databaseId}";
             }
 
             public ICosmosDbCollection<TestEntity> Entities { get; set; }

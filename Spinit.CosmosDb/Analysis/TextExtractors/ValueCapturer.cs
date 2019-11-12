@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using Newtonsoft.Json;
 
 namespace Spinit.CosmosDb
@@ -17,6 +18,36 @@ namespace Spinit.CosmosDb
         protected void Capture(string text)
         {
             _data.Add(text);
+        }
+
+        protected void Capture(short number)
+        {
+            _data.Add(number.ToString(CultureInfo.InvariantCulture));
+        }
+
+        protected void Capture(int number)
+        {
+            _data.Add(number.ToString(CultureInfo.InvariantCulture));
+        }
+
+        protected void Capture(long number)
+        {
+            _data.Add(number.ToString(CultureInfo.InvariantCulture));
+        }
+
+        protected void Capture(decimal number)
+        {
+            _data.Add(number.ToString(CultureInfo.InvariantCulture));
+        }
+
+        protected void Capture(double number)
+        {
+            _data.Add(number.ToString(CultureInfo.InvariantCulture));
+        }
+
+        protected void Capture(bool b)
+        {
+            _data.Add(b.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Spinit.CosmosDb
     {
         private static readonly JsonSerializer jsonSerializer = JsonSerializer.CreateDefault(new JsonSerializerSettings
         {
-            ContractResolver = new SkipCosmosEntityIdContractResolver()
+            ContractResolver = new ContractResolver()
         });
 
         public IEnumerable<string> ExtractText<TEntity>(TEntity entity)

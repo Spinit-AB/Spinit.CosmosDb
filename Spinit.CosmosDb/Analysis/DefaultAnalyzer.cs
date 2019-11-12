@@ -18,6 +18,8 @@ namespace Spinit.CosmosDb
         private static IEnumerable<ITextExtractor> CreateDefaultTextExtractors()
         {
             yield return new StringPropertyTextExtractor();
+            yield return new NumberPropertyTextExtractor();
+            yield return new BoolPropertyTextExtractor();
         }
     }
 }

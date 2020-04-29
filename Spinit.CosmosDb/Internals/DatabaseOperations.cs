@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Cosmos;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace Spinit.CosmosDb
@@ -38,43 +37,6 @@ namespace Spinit.CosmosDb
                     .WithDefaultTimeToLive(30)
                     .CreateIfNotExistsAsync()
                     .ConfigureAwait(false);
-
-
-
-                //await _cosmosClient.CreateDocumentCollectionIfNotExistsAsync(
-                //    UriFactory.CreateDatabaseUri(databaseId),
-                //    new DocumentCollection
-                //    {
-                //        Id = collectionModel.CollectionId,
-                //        PartitionKey = new PartitionKeyDefinition { Paths = new Collection<string> { "/id" } },
-                //        IndexingPolicy = new IndexingPolicy
-                //        {
-                //            IndexingMode = IndexingMode.Consistent,
-                //            Automatic = true,
-                //            IncludedPaths = new Collection<IncludedPath>
-                //            {
-                //                new IncludedPath
-                //                {
-                //                    Path = "/*",
-                //                    Indexes = new Collection<Index>
-                //                    {
-                //                        new RangeIndex(DataType.Number, -1),
-                //                        new RangeIndex(DataType.String, -1)
-                //                    }
-                //                },
-                //                new IncludedPath
-                //                {
-                //                    Path = "/_all/*",
-                //                    Indexes = new Collection<Index>
-                //                    {
-                //                        new HashIndex(DataType.Number, -1),
-                //                        new HashIndex(DataType.String, -1)
-                //                    }
-                //                }
-                //            }
-                //        }
-                //    }
-                //    ).ConfigureAwait(false);
             }
         }
 
@@ -84,14 +46,6 @@ namespace Spinit.CosmosDb
         /// <returns></returns>
         public Task DeleteAsync()
         {
-            //var databaseId = _database.Model.DatabaseId;
-            //var database = new Database
-            //{
-            //    Id = databaseId
-            //};
-
-            //return _cosmosClient.DeleteDatabaseAsync(UriFactory.CreateDatabaseUri(databaseId));
-
             return _cosmosClient.GetDatabase(_database.Model.DatabaseId).DeleteAsync();
         }
     }

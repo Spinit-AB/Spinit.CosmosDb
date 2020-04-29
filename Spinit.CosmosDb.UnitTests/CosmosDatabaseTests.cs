@@ -6,29 +6,20 @@ namespace Spinit.CosmosDb.UnitTests
 {
     public class CosmosDatabaseTests
     {
-        //[Fact]
-        //public void CreateConnectionPolicyShouldSetPreferredLocation()
-        //{
-        //    var config = new DatabaseOptions<CosmosDatabase>
-        //    {
-        //        PreferredLocation = "West Europe"
-        //    };
-        //    var connectionPolicy = CosmosDatabase.CreateConnectionPolicy(config);
-        //    Assert.Contains(connectionPolicy.PreferredLocations, x => x == config.PreferredLocation);
-        //}
-
         [Fact]
         public void ShouldAutoCreateCollectionProperties()
         {
-            var client = Mock.Of<CosmosClient>();
-            var database = new TestDatabase(client);
+            var cosmosClient = Mock.Of<CosmosClient>();
+            var documentClient = Mock.Of<Microsoft.Azure.Documents.Client.DocumentClient>();
+
+            var database = new TestDatabase(documentClient, cosmosClient);
             Assert.NotNull(database.TestEntities);
         }
 
         private class TestDatabase : CosmosDatabase
         {
-            public TestDatabase(CosmosClient client)
-                : base(client, new DatabaseOptions<TestDatabase>())
+            public TestDatabase(Microsoft.Azure.Documents.Client.DocumentClient documentClient, CosmosClient client)
+                : base(documentClient, client, new DatabaseOptions<TestDatabase>())
             { }
 
             [CollectionId("TestEntities")]

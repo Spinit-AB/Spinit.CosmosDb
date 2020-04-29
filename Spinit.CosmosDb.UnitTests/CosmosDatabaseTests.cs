@@ -10,7 +10,7 @@ namespace Spinit.CosmosDb.UnitTests
         public void ShouldAutoCreateCollectionProperties()
         {
             var cosmosClient = Mock.Of<CosmosClient>();
-            var documentClient = Mock.Of<Microsoft.Azure.Documents.Client.DocumentClient>();
+            var documentClient = Mock.Of<Microsoft.Azure.Documents.IDocumentClient>();
 
             var database = new TestDatabase(documentClient, cosmosClient);
             Assert.NotNull(database.TestEntities);
@@ -18,7 +18,7 @@ namespace Spinit.CosmosDb.UnitTests
 
         private class TestDatabase : CosmosDatabase
         {
-            public TestDatabase(Microsoft.Azure.Documents.Client.DocumentClient documentClient, CosmosClient client)
+            public TestDatabase(Microsoft.Azure.Documents.IDocumentClient documentClient, CosmosClient client)
                 : base(documentClient, client, new DatabaseOptions<TestDatabase>())
             { }
 

@@ -47,7 +47,7 @@ namespace Spinit.CosmosDb
     /// </summary>
     public abstract class CosmosDatabase
     {
-        private readonly DocumentClient _documentClient;
+        private readonly Documents.IDocumentClient _documentClient;
         private readonly IDatabaseOptions _options;
 
         protected CosmosDatabase(IDatabaseOptions options)
@@ -86,7 +86,7 @@ namespace Spinit.CosmosDb
             };
         }
 
-        internal CosmosDatabase(Documents.Client.DocumentClient documentClient, CosmosClient cosmosClient, IDatabaseOptions options)
+        internal CosmosDatabase(Documents.IDocumentClient documentClient, CosmosClient cosmosClient, IDatabaseOptions options)
         {
             _documentClient = documentClient;
             CosmosClient = cosmosClient;

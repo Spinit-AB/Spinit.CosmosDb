@@ -1,4 +1,4 @@
-using Microsoft.Azure.Documents;
+using Microsoft.Azure.Cosmos;
 using Moq;
 using Xunit;
 
@@ -7,28 +7,19 @@ namespace Spinit.CosmosDb.UnitTests
     public class CosmosDatabaseTests
     {
         [Fact]
-        public void CreateConnectionPolicyShouldSetPreferredLocation()
-        {
-            var config = new DatabaseOptions<CosmosDatabase>
-            {
-                PreferredLocation = "West Europe"
-            };
-            var connectionPolicy = CosmosDatabase.CreateConnectionPolicy(config);
-            Assert.Contains(connectionPolicy.PreferredLocations, x => x == config.PreferredLocation);
-        }
-
-        [Fact]
         public void ShouldAutoCreateCollectionProperties()
         {
-            var client = Mock.Of<IDocumentClient>();
-            var database = new TestDatabase(client);
+            var cosmosClient = Mock.Of<CosmosClient>();
+            var documentClient = Mock.Of<Microsoft.Azure.Documents.IDocumentClient>();
+
+            var database = new TestDatabase(documentClient, cosmosClient);
             Assert.NotNull(database.TestEntities);
         }
 
         private class TestDatabase : CosmosDatabase
         {
-            public TestDatabase(IDocumentClient client)
-                : base(client, new DatabaseOptions<TestDatabase>())
+            public TestDatabase(Microsoft.Azure.Documents.IDocumentClient documentClient, CosmosClient client)
+                : base(documentClient, client, new DatabaseOptions<TestDatabase>())
             { }
 
             [CollectionId("TestEntities")]

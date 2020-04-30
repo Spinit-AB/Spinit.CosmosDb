@@ -2,27 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Azure.CosmosDB.BulkExecutor;
-using Microsoft.Azure.CosmosDB.BulkExecutor.BulkDelete;
 using Microsoft.Azure.CosmosDB.BulkExecutor.BulkImport;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
-using Microsoft.Azure.Documents.Linq;
+using Microsoft.Azure.CosmosDB.BulkExecutor.BulkDelete;
+using Documents = Microsoft.Azure.Documents;
 using Spinit.Expressions;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Spinit.CosmosDb
 {
+    internal class CosmosStreamResponse<T>
+    {
+        public IEnumerable<T> Documents { get; set; }
+
+        [JsonProperty("_count")]
+        public int Count { get; set; }
+    }
+
     internal class CosmosDbCollection<TEntity> : ICosmosDbCollection<TEntity>
         where TEntity : class, ICosmosEntity
     {
-        private readonly IDocumentClient _documentClient;
+        private readonly Container _container;
+        private readonly Documents.IDocumentClient _documentClient;
         private readonly CollectionModel _model;
 
-        public CosmosDbCollection(IDocumentClient documentClient, CollectionModel model)
+        public CosmosDbCollection(Container container, Documents.IDocumentClient documentClient, CollectionModel model)
         {
+            _container = container;
             _documentClient = documentClient;
             _model = model;
         }
@@ -59,10 +69,11 @@ namespace Spinit.CosmosDb
         {
             try
             {
-                var response = await _documentClient.ReadDocumentAsync<DbEntry<TProjection>>(GetDocumentUri(id), new RequestOptions { PartitionKey = new PartitionKey(id) }).ConfigureAwait(false);
-                return response.Document.Original;
+                var response = await _container.ReadItemAsync<DbEntry<TProjection>>(id, new PartitionKey(id)).ConfigureAwait(false);
+
+                return response.Resource.Original;
             }
-            catch (DocumentClientException e) when (e.StatusCode == HttpStatusCode.NotFound)
+            catch (CosmosException e) when (e.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
@@ -72,7 +83,7 @@ namespace Spinit.CosmosDb
         {
             var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
 
-            var bulkExecutor = new BulkExecutor(_documentClient as DocumentClient, documentCollection);
+            var bulkExecutor = new BulkExecutor(_documentClient as Documents.Client.DocumentClient, documentCollection);
             await bulkExecutor.InitializeAsync().ConfigureAwait(false);
 
             var entries = entities.Select(x => new DbEntry<TEntity>(x, _model.Analyzer));
@@ -91,31 +102,22 @@ namespace Spinit.CosmosDb
 
         public Task UpsertAsync(TEntity document)
         {
-            try
-            {
-                var entry = new DbEntry<TEntity>(document, _model.Analyzer);
-                return _documentClient.UpsertDocumentAsync(GetCollectionUri(), entry, disableAutomaticIdGeneration: true);
-            }
-            catch (DocumentClientException)
-            {
-                // TODO: handle HTTP 429 (Too Many Requests) errors
-                throw;
-            }
+            // TODO: handle HTTP 429 (Too Many Requests) errors
+            var entry = new DbEntry<TEntity>(document, _model.Analyzer);
+
+            return _container.UpsertItemAsync(entry, new PartitionKey(entry.Id));
         }
 
         public Task DeleteAsync(string id)
         {
-            return _documentClient.DeleteDocumentAsync(GetDocumentUri(id), new RequestOptions()
-            {
-                PartitionKey = new PartitionKey(id)
-            });
+            return _container.DeleteItemAsync<TEntity>(id, new PartitionKey(id));
         }
 
         public async Task DeleteAsync(IEnumerable<string> ids)
         {
             var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
 
-            var bulkExecutor = new BulkExecutor(_documentClient as DocumentClient, documentCollection);
+            var bulkExecutor = new BulkExecutor(_documentClient as Documents.Client.DocumentClient, documentCollection);
             await bulkExecutor.InitializeAsync().ConfigureAwait(false);
 
             var entries = ids.Select(x => new Tuple<string, string>(x, x)).ToList();
@@ -132,14 +134,10 @@ namespace Spinit.CosmosDb
         internal protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)
             where TProjection : class, ICosmosEntity
         {
-            var feedOptions = new FeedOptions
-            {
-                EnableCrossPartitionQuery = true,
-                MaxItemCount = request.PageSize,
-                RequestContinuation = request.ContinuationToken
-            };
-
-            var query = _documentClient.CreateDocumentQuery<DbEntry<TEntity>>(GetCollectionUri(), feedOptions).AsQueryable();
+            var query = _container.GetItemLinqQueryable<DbEntry<TEntity>>(
+                    continuationToken: request.ContinuationToken,
+                    requestOptions: new QueryRequestOptions { MaxItemCount = request.PageSize })
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(request.Query))
             {
@@ -160,34 +158,32 @@ namespace Spinit.CosmosDb
                     : query.OrderByDescending(request.SortBy.RemapTo<DbEntry<TEntity>, TEntity, object>(x => x.Normalized));
             }
 
-            var feedResponse = await query.Select(x => x.Original).AsDocumentQuery().ExecuteNextAsync<TProjection>().ConfigureAwait(false);
+            var queryDefinition = query
+                // Hack to get around bug: https://github.com/Azure/azure-cosmos-dotnet-v3/issues/1438
+                .Where(x => true)
+                .ToQueryDefinition();
+            var iterator = _container.GetItemQueryStreamIterator(queryDefinition, request.ContinuationToken, new QueryRequestOptions { MaxItemCount = request.PageSize });
+
+            using var streamResponse = await iterator.ReadNextAsync().ConfigureAwait(false);
+            using var streamReader = new StreamReader(streamResponse.Content);
+            using var jsonTextReader = new JsonTextReader(streamReader);
+
+            var response = new JsonSerializer()
+                .Deserialize<CosmosStreamResponse<TProjection>>(jsonTextReader);
 
             return new SearchResponse<TProjection>
             {
-                ContinuationToken = EncodeContinuationToken(feedResponse.ResponseContinuation),
-                Documents = feedResponse.ToArray(),
+                ContinuationToken = streamResponse.ContinuationToken,
+                Documents = response.Documents,
                 TotalCount = request.IncludeTotalCount
                     ? await query.CountAsync().ConfigureAwait(false)
                     : (int?)null
             };
         }
 
-        private Uri GetDocumentUri(string id)
-        {
-            return UriFactory.CreateDocumentUri(_model.DatabaseId, _model.CollectionId, id);
-        }
-
         private Uri GetCollectionUri()
         {
-            return UriFactory.CreateDocumentCollectionUri(_model.DatabaseId, _model.CollectionId);
-        }
-
-        private string EncodeContinuationToken(string continuationToken)
-        {
-            if (string.IsNullOrEmpty(continuationToken))
-                return continuationToken;
-
-            return Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(continuationToken));
+            return Documents.Client.UriFactory.CreateDocumentCollectionUri(_model.DatabaseId, _model.CollectionId);
         }
     }
 }

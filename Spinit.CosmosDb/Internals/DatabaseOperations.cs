@@ -1,19 +1,17 @@
-﻿using System.Collections.ObjectModel;
+﻿using Microsoft.Azure.Cosmos;
 using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 
 namespace Spinit.CosmosDb
 {
     internal class DatabaseOperations : IDatabaseOperations
     {
         private readonly CosmosDatabase _database;
-        private readonly IDocumentClient _documentClient;
+        private readonly CosmosClient _cosmosClient;
 
-        internal DatabaseOperations(CosmosDatabase database, IDocumentClient documentClient)
+        internal DatabaseOperations(CosmosDatabase database, CosmosClient cosmosClient)
         {
             _database = database;
-            _documentClient = documentClient;
+            _cosmosClient = cosmosClient;
         }
 
         /// <summary>
@@ -23,47 +21,22 @@ namespace Spinit.CosmosDb
         public async Task CreateIfNotExistsAsync()
         {
             var databaseId = _database.Model.DatabaseId;
-            var database = new Database
-            {
-                Id = databaseId
-            };
-            await _documentClient.CreateDatabaseIfNotExistsAsync(database).ConfigureAwait(false);
+
+            await _cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId).ConfigureAwait(false);
             foreach (var collectionModel in _database.Model.CollectionModels)
             {
-                await _documentClient.CreateDocumentCollectionIfNotExistsAsync(
-                    UriFactory.CreateDatabaseUri(databaseId),
-                    new DocumentCollection
-                    {
-                        Id = collectionModel.CollectionId,
-                        PartitionKey = new PartitionKeyDefinition { Paths = new Collection<string> { "/id" } },
-                        IndexingPolicy = new IndexingPolicy
-                        {
-                            IndexingMode = IndexingMode.Consistent,
-                            Automatic = true,
-                            IncludedPaths = new Collection<IncludedPath>
-                            {
-                                new IncludedPath
-                                {
-                                    Path = "/*",
-                                    Indexes = new Collection<Index>
-                                    {
-                                        new RangeIndex(DataType.Number, -1),
-                                        new RangeIndex(DataType.String, -1)
-                                    }
-                                },
-                                new IncludedPath
-                                {
-                                    Path = "/_all/*",
-                                    Indexes = new Collection<Index>
-                                    {
-                                        new HashIndex(DataType.Number, -1),
-                                        new HashIndex(DataType.String, -1)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    ).ConfigureAwait(false);
+                await _cosmosClient.GetDatabase(databaseId)
+                    .DefineContainer(name: collectionModel.CollectionId, partitionKeyPath: "/id")
+                        .WithIndexingPolicy()
+                            .WithIncludedPaths()
+                                .Path("/*")
+                                .Path("/_all/*")
+                                .Attach()
+                        .WithIndexingMode(IndexingMode.Consistent)
+                            .Attach()
+                    .WithDefaultTimeToLive(30)
+                    .CreateIfNotExistsAsync()
+                    .ConfigureAwait(false);
             }
         }
 
@@ -73,12 +46,7 @@ namespace Spinit.CosmosDb
         /// <returns></returns>
         public Task DeleteAsync()
         {
-            var databaseId = _database.Model.DatabaseId;
-            var database = new Database
-            {
-                Id = databaseId
-            };
-            return _documentClient.DeleteDatabaseAsync(UriFactory.CreateDatabaseUri(databaseId));
+            return _cosmosClient.GetDatabase(_database.Model.DatabaseId).DeleteAsync();
         }
     }
 }

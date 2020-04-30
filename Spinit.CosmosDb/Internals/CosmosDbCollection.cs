@@ -131,7 +131,7 @@ namespace Spinit.CosmosDb
             } while (bulkDeleteResponse.NumberOfDocumentsDeleted < entries.Count && bulkDeleteResponse.NumberOfDocumentsDeleted > 0);
         }
 
-        internal protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)
+        protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)
             where TProjection : class, ICosmosEntity
         {
             var query = _container.GetItemLinqQueryable<DbEntry<TEntity>>(

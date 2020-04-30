@@ -6,7 +6,6 @@ using Microsoft.Azure.Cosmos;
 using Documents = Microsoft.Azure.Documents;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Microsoft.Azure.Documents.Client;
 
 namespace Spinit.CosmosDb
 {

@@ -16,8 +16,9 @@ using Newtonsoft.Json;
 namespace Spinit.CosmosDb
 {
     internal class CosmosStreamResponse<T>
+        where T : class, ICosmosEntity
     {
-        public IEnumerable<T> Documents { get; set; }
+        public IEnumerable<DbEntry<T>> Documents { get; set; }
 
         [JsonProperty("_count")]
         public int Count { get; set; }
@@ -168,13 +169,12 @@ namespace Spinit.CosmosDb
             using var streamReader = new StreamReader(streamResponse.Content);
             using var jsonTextReader = new JsonTextReader(streamReader);
 
-            var response = new JsonSerializer()
-                .Deserialize<CosmosStreamResponse<TProjection>>(jsonTextReader);
+            var response = JsonConvert.DeserializeObject<CosmosStreamResponse<TProjection>>(streamReader.ReadToEnd());
 
             return new SearchResponse<TProjection>
             {
                 ContinuationToken = streamResponse.ContinuationToken,
-                Documents = response.Documents,
+                Documents = response.Documents?.Select(x => x.Original),
                 TotalCount = request.IncludeTotalCount
                     ? await query.CountAsync().ConfigureAwait(false)
                     : (int?)null

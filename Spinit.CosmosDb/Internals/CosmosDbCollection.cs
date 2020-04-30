@@ -101,19 +101,12 @@ namespace Spinit.CosmosDb
             } while (bulkImportResponse.NumberOfDocumentsImported < entries.Count());
         }
 
-    public Task UpsertAsync(TEntity document)
+        public Task UpsertAsync(TEntity document)
         {
-            try
-            {
-                var entry = new DbEntry<TEntity>(document, _model.Analyzer);
+            // TODO: handle HTTP 429 (Too Many Requests) errors
+            var entry = new DbEntry<TEntity>(document, _model.Analyzer);
 
-                return _container.UpsertItemAsync(entry, new PartitionKey(entry.Id));
-            }
-            catch (CosmosException)
-            {
-                // TODO: handle HTTP 429 (Too Many Requests) errors
-                throw;
-            }
+            return _container.UpsertItemAsync(entry, new PartitionKey(entry.Id));
         }
 
         public Task DeleteAsync(string id)

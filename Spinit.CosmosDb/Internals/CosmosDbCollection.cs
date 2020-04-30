@@ -11,9 +11,19 @@ using Microsoft.Azure.CosmosDB.BulkExecutor.BulkImport;
 using Microsoft.Azure.CosmosDB.BulkExecutor.BulkDelete;
 using Documents = Microsoft.Azure.Documents;
 using Spinit.Expressions;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Spinit.CosmosDb
 {
+    internal class CosmosStreamResponse<T>
+    {
+        public IEnumerable<T> Documents { get; set; }
+
+        [JsonProperty("_count")]
+        public int Count { get; set; }
+    }
+
     internal class CosmosDbCollection<TEntity> : ICosmosDbCollection<TEntity>
         where TEntity : class, ICosmosEntity
     {
@@ -156,33 +166,27 @@ namespace Spinit.CosmosDb
                     : query.OrderByDescending(request.SortBy.RemapTo<DbEntry<TEntity>, TEntity, object>(x => x.Normalized));
             }
 
-            var feedResponse = await query
-                .Select(x => x.Original)
-                .ToFeedIterator()
-                .ReadNextAsync()
-                .ConfigureAwait(false);
+            var queryDefinition = query
+                // Hack to get around bug: https://github.com/Azure/azure-cosmos-dotnet-v3/issues/1438
+                .Where(x => true)
+                .ToQueryDefinition();
+            var iterator = _container.GetItemQueryStreamIterator(queryDefinition, request.ContinuationToken, new QueryRequestOptions { MaxItemCount = request.PageSize });
+
+            using var streamResponse = await iterator.ReadNextAsync().ConfigureAwait(false);
+            using var streamReader = new StreamReader(streamResponse.Content);
+            using var jsonTextReader = new JsonTextReader(streamReader);
+
+            var response = new JsonSerializer()
+                .Deserialize<CosmosStreamResponse<TProjection>>(jsonTextReader);
 
             return new SearchResponse<TProjection>
             {
-                ContinuationToken = EncodeContinuationToken(feedResponse.ContinuationToken),
-                Documents = feedResponse.Cast<TProjection>().ToArray(),
+                ContinuationToken = streamResponse.ContinuationToken,
+                Documents = response.Documents,
                 TotalCount = request.IncludeTotalCount
                     ? await query.CountAsync().ConfigureAwait(false)
                     : (int?)null
             };
-        }
-
-        private string EncodeContinuationToken(string continuationToken)
-        {
-            if (string.IsNullOrEmpty(continuationToken))
-                return continuationToken;
-
-            return Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(continuationToken));
-        }
-
-        private Uri GetDocumentUri(string id)
-        {
-            return Documents.Client.UriFactory.CreateDocumentUri(_model.DatabaseId, _model.CollectionId, id);
         }
 
         private Uri GetCollectionUri()

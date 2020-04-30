@@ -19,10 +19,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             {
                 var entityCount = 100;
                 var entities = Enumerable.Range(1, entityCount).Select(x => new TestEntity { Id = x.ToString(), Title = "åäö" });
-                foreach (var entity in entities)
-                {
-                    await database.TestEntities.UpsertAsync(entity);
-                }
+                await database.TestEntities.UpsertAsync(entities);
 
                 string continuationToken = null;
                 var fetchedItems = 0;
@@ -31,7 +28,7 @@ namespace Spinit.CosmosDb.FunctionalTests
                     var searchRequest = new SearchRequest<TestEntity>
                     {
                         ContinuationToken = continuationToken,
-                        PageSize = 1,
+                        PageSize = 10,
                         SortBy = x => x.Title
                     };
                     var searchResponse = await database.TestEntities.SearchAsync(searchRequest);

@@ -85,7 +85,7 @@ namespace Spinit.CosmosDb
             };
         }
 
-        internal protected CosmosDatabase(Documents.IDocumentClient documentClient, CosmosClient cosmosClient, IDatabaseOptions options)
+        protected CosmosDatabase(Documents.IDocumentClient documentClient, CosmosClient cosmosClient, IDatabaseOptions options)
         {
             _documentClient = documentClient;
             CosmosClient = cosmosClient;

@@ -34,7 +34,6 @@ namespace Spinit.CosmosDb
                                 .Attach()
                         .WithIndexingMode(IndexingMode.Consistent)
                             .Attach()
-                    .WithDefaultTimeToLive(30)
                     .CreateIfNotExistsAsync()
                     .ConfigureAwait(false);
             }

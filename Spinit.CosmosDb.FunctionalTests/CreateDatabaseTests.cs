@@ -25,7 +25,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             var database = new DummyDatabase();
             
             await database.Operations.CreateIfNotExistsAsync();
-            var throughput = await database.Dummies.ReadThroughputAsync();
+            var throughput = await database.Dummies.GetThroughputAsync();
             await database.Operations.DeleteAsync();
 
             Assert.Equal(400, throughput);
@@ -40,7 +40,7 @@ namespace Spinit.CosmosDb.FunctionalTests
             var database = new DummyDatabase();
 
             await database.Operations.CreateIfNotExistsAsync(defaultThroughput);
-            var throughput = await database.Dummies.ReadThroughputAsync();
+            var throughput = await database.Dummies.GetThroughputAsync();
             await database.Operations.DeleteAsync();
 
             Assert.Equal(expected, throughput);

@@ -56,16 +56,16 @@ namespace Spinit.CosmosDb
         Task DeleteAsync(IEnumerable<string> ids);
 
         /// <summary>
-        /// Reads the throughput (RU:s) set for the collection.
+        /// Gets the throughput (RU:s) set for the collection.
         /// </summary>
         /// <returns>The collection's throughput</returns>
-        Task<int?> ReadThroughputAsync();
+        Task<int?> GetThroughputAsync();
 
         /// <summary>
-        /// Replaces the throughput (RU:s) for the collection.
+        /// Sets the throughput (RU:s) for the collection.
         /// </summary>
         /// <param name="throughput">The new throughput to set. Must be between 400 and 1000000 in increments of 100.</param>
         /// <returns></returns>
-        Task ReplaceThroughputAsync(int throughput);
+        Task SetThroughputAsync(int throughput);
     }
 }

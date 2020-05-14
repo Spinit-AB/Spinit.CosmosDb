@@ -12,6 +12,7 @@ using Documents = Microsoft.Azure.Documents;
 using Spinit.Expressions;
 using System.IO;
 using Newtonsoft.Json;
+using Spinit.CosmosDb.Validation;
 
 namespace Spinit.CosmosDb
 {
@@ -130,6 +131,21 @@ namespace Spinit.CosmosDb
                     .BulkDeleteAsync(entries)
                     .ConfigureAwait(false);
             } while (bulkDeleteResponse.NumberOfDocumentsDeleted < entries.Count && bulkDeleteResponse.NumberOfDocumentsDeleted > 0);
+        }
+
+        public Task<int?> GetThroughputAsync()
+        {
+            return _container.ReadThroughputAsync();
+        }
+
+        public Task SetThroughputAsync(int throughput)
+        {
+            if (!ThroughputValidator.IsValidThroughput(throughput))
+            {
+                throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.", nameof(throughput));
+            }
+
+            return _container.ReplaceThroughputAsync(throughput);
         }
 
         internal protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
+using Spinit.CosmosDb.Validation;
+using System;
 using System.Threading.Tasks;
 
 namespace Spinit.CosmosDb
@@ -18,7 +20,17 @@ namespace Spinit.CosmosDb
         /// Creates the Cosmos database and defined collections if not exists.
         /// </summary>
         /// <returns></returns>
-        public async Task CreateIfNotExistsAsync()
+        public Task CreateIfNotExistsAsync(int containerThroughput = 400)
+        {
+            if (!ThroughputValidator.IsValidThroughput(containerThroughput))
+            {
+                throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.", nameof(containerThroughput));
+            }
+
+            return CreateIfNotExistsInternalAsync(containerThroughput);
+        }
+
+        private async Task CreateIfNotExistsInternalAsync(int containerThroughput = 400)
         {
             var databaseId = _database.Model.DatabaseId;
 
@@ -34,7 +46,7 @@ namespace Spinit.CosmosDb
                                 .Attach()
                         .WithIndexingMode(IndexingMode.Consistent)
                             .Attach()
-                    .CreateIfNotExistsAsync()
+                    .CreateIfNotExistsAsync(containerThroughput)
                     .ConfigureAwait(false);
             }
         }

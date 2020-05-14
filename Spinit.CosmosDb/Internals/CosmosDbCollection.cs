@@ -138,13 +138,18 @@ namespace Spinit.CosmosDb
             return await _container.ReadThroughputAsync().ConfigureAwait(false);
         }
 
-        public async Task ReplaceThroughputAsync(int throughput)
+        public Task ReplaceThroughputAsync(int throughput)
         {
             if (!ThroughputValidator.IsValidThroughput(throughput))
             {
                 throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.", nameof(throughput));
             }
 
+            return ReplaceThroughputInternalAsync(throughput);
+        }
+
+        private async Task ReplaceThroughputInternalAsync(int throughput)
+        {
             await _container.ReplaceThroughputAsync(throughput).ConfigureAwait(false);
         }
 

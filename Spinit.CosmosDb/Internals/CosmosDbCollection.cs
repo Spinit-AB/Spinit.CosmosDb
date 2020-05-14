@@ -133,9 +133,9 @@ namespace Spinit.CosmosDb
             } while (bulkDeleteResponse.NumberOfDocumentsDeleted < entries.Count && bulkDeleteResponse.NumberOfDocumentsDeleted > 0);
         }
 
-        public async Task<int?> GetThroughputAsync()
+        public Task<int?> GetThroughputAsync()
         {
-            return await _container.ReadThroughputAsync().ConfigureAwait(false);
+            return _container.ReadThroughputAsync();
         }
 
         public Task SetThroughputAsync(int throughput)
@@ -145,12 +145,7 @@ namespace Spinit.CosmosDb
                 throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.", nameof(throughput));
             }
 
-            return SetThroughputInternalAsync(throughput);
-        }
-
-        private async Task SetThroughputInternalAsync(int throughput)
-        {
-            await _container.ReplaceThroughputAsync(throughput).ConfigureAwait(false);
+            return _container.ReplaceThroughputAsync(throughput);
         }
 
         internal protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)

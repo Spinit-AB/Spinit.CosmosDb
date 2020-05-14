@@ -178,6 +178,36 @@ namespace Spinit.CosmosDb.FunctionalTests
 
         [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
+        public async Task TestReadCollectionThroughput()
+        {
+            await _database.Todos.ReadThroughputAsync();
+        }
+
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        public async Task TestReplaceCollectionThroughput()
+        {
+            await _database.Todos.ReplaceThroughputAsync(1000);
+        }
+
+
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        public async Task TestReadNewlyReplacedThrouhgput()
+        {
+            var throughput = await _database.Todos.ReadThroughputAsync();
+            Assert.Equal(1000, throughput);
+        }
+
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        public async Task TestReplaceThroughputWithInvalidThroughput()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(async () => await _database.Todos.ReplaceThroughputAsync(399));
+        }
+
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
         public async Task DeleteDatabase()
         {
             await _database.Operations.DeleteAsync();

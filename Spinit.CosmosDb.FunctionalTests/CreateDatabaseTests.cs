@@ -8,25 +8,55 @@ namespace Spinit.CosmosDb.FunctionalTests
     [TestCaseOrderer("Spinit.CosmosDb.FunctionalTests.Infrastructure.TestCaseByAttributeOrderer", "Spinit.CosmosDb.FunctionalTests")]
     public class CreateDatabaseTests : IClassFixture<CreateDatabaseTests.DummyDatabase>
     {
-        private readonly DummyDatabase _database;
-
-        public CreateDatabaseTests(DummyDatabase database)
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        public async Task TestCreateAndDeleteDatabase()
         {
-            _database = database;
+            var database = new DummyDatabase();
+
+            await database.Operations.CreateIfNotExistsAsync();
+            await database.Operations.DeleteAsync();
         }
 
         [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
-        public async Task TestCreateDatabase()
+        public async Task TestCreateDatabaseWithoutDefaultThroughputSet()
         {
-            await _database.Operations.CreateIfNotExistsAsync();
+            var database = new DummyDatabase();
+            
+            await database.Operations.CreateIfNotExistsAsync();
+            var throughput = await database.Dummies.ReadThroughputAsync();
+            await database.Operations.DeleteAsync();
+
+            Assert.Equal(400, throughput);
+        }
+        
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        [InlineData(500, 500)]
+        [InlineData(1000, 1000)]
+        public async Task TestCreateDatabaseWithtDefaultThroughputSet(int defaultThroughput, int expected)
+        {
+            var database = new DummyDatabase();
+
+            await database.Operations.CreateIfNotExistsAsync(defaultThroughput);
+            var throughput = await database.Dummies.ReadThroughputAsync();
+            await database.Operations.DeleteAsync();
+
+            Assert.Equal(expected, throughput);
         }
 
-        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
-        public async Task TestDeleteDatabase()
+        [InlineData(399)]
+        [InlineData(10001)]
+        [InlineData(550)]
+        [InlineData(999)]
+        public async Task TestCreateDatabaseWithInvalidThroughputSet(int defaultThroughput)
         {
-            await _database.Operations.DeleteAsync();
+            var database = new DummyDatabase();
+
+            await Assert.ThrowsAsync<ArgumentException>(async () => await database.Operations.CreateIfNotExistsAsync(defaultThroughput));
         }
 
         public class DummyDatabase : CosmosDatabase

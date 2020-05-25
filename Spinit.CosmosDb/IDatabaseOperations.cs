@@ -8,9 +8,9 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Creates the Cosmos database and defined collections if not exists.
         /// </summary>
-        /// <param name="createOptions">Optional parameter to specify the throughput (RU/s) the database or container should be created with.</param>
+        /// <param name="options">Optional parameter to specify the throughput (RU/s) the database or container should be created with.</param>
         /// <returns></returns>
-        public Task CreateIfNotExistsAsync(CreateDbOptions createOptions = null);
+        public Task CreateIfNotExistsAsync(CreateDbOptions options = null);
 
         /// <summary>
         /// Deletes the Cosmos database.

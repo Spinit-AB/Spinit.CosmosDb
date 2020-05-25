@@ -20,21 +20,56 @@ namespace Spinit.CosmosDb
         /// Creates the Cosmos database and defined collections if not exists.
         /// </summary>
         /// <returns></returns>
-        public Task CreateIfNotExistsAsync(int containerThroughput = 400)
+        public Task CreateIfNotExistsAsync(CreateDbOptions options = null)
         {
-            if (!ThroughputValidator.IsValidThroughput(containerThroughput))
+            if (options != null && !ThroughputValidator.IsValidThroughput(options.Throughput))
             {
-                throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.", nameof(containerThroughput));
+                throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.");
             }
 
-            return CreateIfNotExistsInternalAsync(containerThroughput);
+            return CreateIfNotExistsInternalAsync(options);
         }
 
-        private async Task CreateIfNotExistsInternalAsync(int containerThroughput = 400)
+        /// <summary>
+        /// Deletes the Cosmos database.
+        /// </summary>
+        /// <returns></returns>
+        public Task DeleteAsync()
+        {
+            return _cosmosClient.GetDatabase(_database.Model.DatabaseId).DeleteAsync();
+        }
+
+        /// <summary>
+        /// Gets the throughput (RU/s) set for the collection.
+        /// </summary>
+        /// <returns></returns>
+        public Task<int?> GetThroughputAsync()
+        {
+            return _cosmosClient.GetDatabase(_database.Model.DatabaseId).ReadThroughputAsync();
+        }
+
+        /// <summary>
+        /// Sets the throughput (RU/s) for the database.
+        /// </summary>
+        /// <param name="throughput">The new throughput to set. Must be between 400 and 1000000 in increments of 100.</param>
+        /// <returns></returns>
+        public Task SetThroughputAsync(int throughput)
+        {
+            if (!ThroughputValidator.IsValidThroughput(throughput))
+            {
+                throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.", nameof(throughput));
+            }
+
+            return _cosmosClient.GetDatabase(_database.Model.DatabaseId).ReplaceThroughputAsync(throughput);
+        }
+
+        private async Task CreateIfNotExistsInternalAsync(CreateDbOptions options = null)
         {
             var databaseId = _database.Model.DatabaseId;
+            var databaseThroughput = options != null && options.ThroughputType == ThroughputType.Database ? options.Throughput : (int?)null;
+            var containerThroughput = options != null && options.ThroughputType == ThroughputType.Container ? options.Throughput : (int?)null;
 
-            await _cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId).ConfigureAwait(false);
+            await _cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId, databaseThroughput).ConfigureAwait(false);
             foreach (var collectionModel in _database.Model.CollectionModels)
             {
                 await _cosmosClient.GetDatabase(databaseId)
@@ -49,15 +84,6 @@ namespace Spinit.CosmosDb
                     .CreateIfNotExistsAsync(containerThroughput)
                     .ConfigureAwait(false);
             }
-        }
-
-        /// <summary>
-        /// Deletes the Cosmos database.
-        /// </summary>
-        /// <returns></returns>
-        public Task DeleteAsync()
-        {
-            return _cosmosClient.GetDatabase(_database.Model.DatabaseId).DeleteAsync();
         }
     }
 }

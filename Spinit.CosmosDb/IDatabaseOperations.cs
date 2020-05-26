@@ -8,14 +8,27 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Creates the Cosmos database and defined collections if not exists.
         /// </summary>
-        /// <param name="containerThroughput">Optional parameter to specify the throughput (RU/s) the containers should be created with. Defaults to 400.</param>
+        /// <param name="options">Optional parameter to specify the throughput (RU/s) the database or container should be created with.</param>
         /// <returns></returns>
-        Task CreateIfNotExistsAsync(int containerThroughput = 400);
+        public Task CreateIfNotExistsAsync(CreateDbOptions options = null);
 
         /// <summary>
         /// Deletes the Cosmos database.
         /// </summary>
         /// <returns></returns>
         Task DeleteAsync();
+
+        /// <summary>
+        /// Gets the throughput (RU/s) set for the collection.
+        /// </summary>
+        /// <returns></returns>
+        Task<int?> GetThroughputAsync();
+
+        /// <summary>
+        /// Sets the throughput (RU/s) for the database.
+        /// </summary>
+        /// <param name="throughput">The new throughput to set. Must be between 400 and 1000000 in increments of 100.</param>
+        /// <returns></returns>
+        Task SetThroughputAsync(int throughput);
     }
 }

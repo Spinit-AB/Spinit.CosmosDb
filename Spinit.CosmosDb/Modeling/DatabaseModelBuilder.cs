@@ -17,6 +17,10 @@ namespace Spinit.CosmosDb
         public DatabaseModelBuilder<TDatabase> DatabaseId(string databaseId)
         {
             _databaseModel.DatabaseId = databaseId;
+            foreach (var collectionModel in _databaseModel.CollectionModels)
+            {
+                collectionModel.DatabaseId = databaseId;
+            }
             return this;
         }
 

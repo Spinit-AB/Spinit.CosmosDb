@@ -21,8 +21,8 @@ Package Manager:
 Usage
 -----
 
-### Define a database model:
-
+## Define a database model
+### Automatic initialization
 ```csharp
 public class MyEntity : ICosmosEntity
 {
@@ -31,15 +31,50 @@ public class MyEntity : ICosmosEntity
     public string Description { get; set; }
 }
 
-[DatabaseId("MyDatabase")] // name of the cosmos database, optional
+/*
+ Name of the cosmos database, optional.
+ If not provided, name of class will be used (MyDatabase in this case).
+*/
+[DatabaseId("FooDatabase")]
 public class MyDatabase : CosmosDatabase
 {
     public MyDatabase(DatabaseOptions<MyDatabase> options)
         : base(options)
     { }
 
-    [CollectionId("MyEntities")] // name of the cosmos collection, optional
+    /*
+    Name of the cosmos collection, optional.
+    If not provided, name of class will be used (MyEntities in this case).
+    */
+    [CollectionId("FooCollection")]
     public ICosmosDbCollection<MyEntity> MyEntities { get; private set; }
+}
+```
+
+### Manual initialization
+```csharp
+public class MyEntity : ICosmosEntity
+{
+    public string Id { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+}
+
+public class MyDatabase : CosmosDatabase
+{
+    public MyDatabase(DatabaseOptions<MyDatabase> options)
+        : base(options, initialize: false)
+    { }
+
+    public ICosmosDbCollection<MyEntity> MyEntities { get; private set; }
+
+    protected override void OnModelCreating(DatabaseModelBuilder<MyDatabase> modelBuilder)
+    {
+        modelBuilder.DatabaseId("FooDatabase");
+
+        modelBuilder.Collection(x => x.MyEntities)
+            .CollectionId("FooCollection");
+    }
 }
 ```
 

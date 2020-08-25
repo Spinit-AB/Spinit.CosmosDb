@@ -18,8 +18,13 @@ namespace Spinit.CosmosDb
     public abstract class CosmosDatabase<TImplementation> : CosmosDatabase
         where TImplementation : CosmosDatabase
     {
-        protected CosmosDatabase(DatabaseOptions<TImplementation> options)
-            : base(options)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="initialize">Pass true of automatic initialization of database and collection objects is desired and false if manual initialization is desired.</param>
+        protected CosmosDatabase(DatabaseOptions<TImplementation> options, bool initialize = true)
+            : base(options, initialize)
         { }
 
         /// <summary>
@@ -49,14 +54,14 @@ namespace Spinit.CosmosDb
         private readonly Documents.IDocumentClient _documentClient;
         private readonly IDatabaseOptions _options;
 
-        protected CosmosDatabase(IDatabaseOptions options)
+        protected CosmosDatabase(IDatabaseOptions options, bool initialize = true)
             : this(
                 new Documents.Client.DocumentClient(new Uri(options.Endpoint), options.Key, connectionPolicy: CreateConnectionPolicy(options), serializerSettings: CreateJsonSerializerSettings()),
                 new CosmosClient(
                     new Uri(options.Endpoint).AbsoluteUri,
                     options.Key,
                     new CosmosClientOptions()
-                ), options)
+                ), options, initialize)
         { }
 
         internal static Documents.Client.ConnectionPolicy CreateConnectionPolicy(IDatabaseOptions options)
@@ -85,12 +90,16 @@ namespace Spinit.CosmosDb
             };
         }
 
-        protected CosmosDatabase(Documents.IDocumentClient documentClient, CosmosClient cosmosClient, IDatabaseOptions options)
+        protected CosmosDatabase(Documents.IDocumentClient documentClient, CosmosClient cosmosClient, IDatabaseOptions options, bool initialize = true)
         {
             _documentClient = documentClient;
             CosmosClient = cosmosClient;
             _options = options;
-            Initialize();
+
+            if (initialize)
+            {
+                Initialize();
+            }
         }
 
         /// <summary>
@@ -128,7 +137,7 @@ namespace Spinit.CosmosDb
             };
         }
 
-        private void Initialize()
+        protected void Initialize()
         {
             Model = CreateModel();
             SetupCollectionProperties();
@@ -148,9 +157,15 @@ namespace Spinit.CosmosDb
             where TEntity : class, ICosmosEntity
         {
             var collectionId = collectionProperty.GetCollectionId();
-            var collectionModel = Model.CollectionModels.Single(x => x.CollectionId == collectionId); // TODO: add indexed property => Model.CollectionModels[collectionId]
-            var collection = new CosmosDbCollection<TEntity>(CosmosClient.GetContainer(collectionModel.DatabaseId, collectionId), _documentClient, collectionModel);
-            collectionProperty.SetValue(this, collection);
+            var collectionModel = Model.CollectionModels
+                .Where(x => x.CollectionId != null)
+                .SingleOrDefault(x => x.CollectionId == collectionId); // TODO: add indexed property => Model.CollectionModels[collectionId]
+
+            if (collectionModel != null)
+            {
+                var collection = new CosmosDbCollection<TEntity>(CosmosClient.GetContainer(collectionModel.DatabaseId, collectionId), _documentClient, collectionModel);
+                collectionProperty.SetValue(this, collection);
+            }
         }
 
         private IEnumerable<PropertyInfo> GetCollectionProperties()

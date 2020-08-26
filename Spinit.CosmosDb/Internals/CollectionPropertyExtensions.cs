@@ -6,6 +6,14 @@ namespace Spinit.CosmosDb
 {
     internal static class CollectionPropertyExtensions
     {
+        internal static string GetCollectionPropertyName<TDatabase, TEntity>(this Expression<Func<TDatabase, ICosmosDbCollection<TEntity>>> collectionSelector)
+            where TDatabase : CosmosDatabase
+            where TEntity : class, ICosmosEntity
+        {
+            var collectionProperty = GetCollectionPropertyInfo(collectionSelector);
+            return collectionProperty.Name;
+        }
+
         internal static string GetCollectionId<TDatabase, TEntity>(this Expression<Func<TDatabase, ICosmosDbCollection<TEntity>>> collectionSelector)
             where TDatabase : CosmosDatabase
             where TEntity : class, ICosmosEntity

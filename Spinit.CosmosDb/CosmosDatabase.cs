@@ -130,6 +130,7 @@ namespace Spinit.CosmosDb
                     .Select(x => new CollectionModel
                     {
                         DatabaseId = databaseId,
+                        PropertyName = x.Name,
                         CollectionId = x.GetCollectionId(),
                         Analyzer = new DefaultAnalyzer()
                     })
@@ -156,16 +157,14 @@ namespace Spinit.CosmosDb
         private void SetupCollectionProperty<TEntity>(PropertyInfo collectionProperty)
             where TEntity : class, ICosmosEntity
         {
-            var collectionId = collectionProperty.GetCollectionId();
             var collectionModel = Model.CollectionModels
-                .Where(x => x.CollectionId != null)
-                .SingleOrDefault(x => x.CollectionId == collectionId); // TODO: add indexed property => Model.CollectionModels[collectionId]
+                .SingleOrDefault(x => x.PropertyName == collectionProperty.Name); // TODO: add indexed property => Model.CollectionModels[collectionId]
 
-            if (collectionModel != null)
-            {
-                var collection = new CosmosDbCollection<TEntity>(CosmosClient.GetContainer(collectionModel.DatabaseId, collectionId), _documentClient, collectionModel);
-                collectionProperty.SetValue(this, collection);
-            }
+            if (string.IsNullOrEmpty(collectionModel.CollectionId))
+                collectionModel.CollectionId = collectionProperty.GetCollectionId();
+
+            var collection = new CosmosDbCollection<TEntity>(CosmosClient.GetContainer(collectionModel.DatabaseId, collectionModel.CollectionId), _documentClient, collectionModel);
+            collectionProperty.SetValue(this, collection);
         }
 
         private IEnumerable<PropertyInfo> GetCollectionProperties()

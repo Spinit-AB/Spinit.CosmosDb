@@ -27,8 +27,8 @@ namespace Spinit.CosmosDb
         public CollectionModelBuilder<TEntity> Collection<TEntity>(Expression<Func<TDatabase, ICosmosDbCollection<TEntity>>> collectionSelector)
             where TEntity : class, ICosmosEntity
         {
-            var collectionId = collectionSelector.GetCollectionId();
-            var collectionModel = _databaseModel.CollectionModels.Single(x => x.CollectionId == collectionId); // TODO: add indexed property => Model.CollectionModels[collectionId]
+            var propertyName = collectionSelector.GetCollectionPropertyName();
+            var collectionModel = _databaseModel.CollectionModels.Single(x => x.PropertyName == propertyName); // TODO: add indexed property => Model.CollectionModels[collectionId]
             return new CollectionModelBuilder<TEntity>(collectionModel);
         }
 

@@ -182,6 +182,10 @@ namespace Spinit.CosmosDb
             var iterator = _container.GetItemQueryStreamIterator(queryDefinition, request.ContinuationToken, new QueryRequestOptions { MaxItemCount = request.PageSize });
 
             using var streamResponse = await iterator.ReadNextAsync().ConfigureAwait(false);
+            if (streamResponse.StatusCode != HttpStatusCode.OK)
+            {
+                throw new SpinitCosmosDbException(streamResponse.StatusCode, streamResponse.ErrorMessage);
+            }
             using var streamReader = new StreamReader(streamResponse.Content);
             using var jsonTextReader = new JsonTextReader(streamReader);
 

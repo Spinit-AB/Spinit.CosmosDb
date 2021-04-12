@@ -1,4 +1,7 @@
-﻿namespace Spinit.CosmosDb
+﻿using Newtonsoft.Json;
+using System;
+
+namespace Spinit.CosmosDb
 {
     public interface IDatabaseOptions
     {
@@ -15,5 +18,7 @@
         /// Optional preferred location
         /// </summary>
         string PreferredLocation { get; set; }
+
+        Action<JsonSerializerSettings> ConfigureJsonSerializerSettings { get; set; }
     }
 }

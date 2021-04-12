@@ -56,7 +56,7 @@ namespace Spinit.CosmosDb
 
         protected CosmosDatabase(IDatabaseOptions options, bool initialize = true)
             : this(
-                new Documents.Client.DocumentClient(new Uri(options.Endpoint), options.Key, connectionPolicy: CreateConnectionPolicy(options), serializerSettings: CreateJsonSerializerSettings()),
+                new Documents.Client.DocumentClient(new Uri(options.Endpoint), options.Key, connectionPolicy: CreateConnectionPolicy(options), serializerSettings: CreateJsonSerializerSettings(options)),
                 new CosmosClient(
                     new Uri(options.Endpoint).AbsoluteUri,
                     options.Key,
@@ -78,16 +78,20 @@ namespace Spinit.CosmosDb
             return connectionPolicy;
         }
 
-        internal static JsonSerializerSettings CreateJsonSerializerSettings()
+        internal static JsonSerializerSettings CreateJsonSerializerSettings(IDatabaseOptions options = null)
         {
-            return new JsonSerializerSettings
+            var settings = new JsonSerializerSettings
             {
                 DateParseHandling = DateParseHandling.None,
-                Converters = new[]
+                Converters = new List<JsonConverter>
                 {
                     new IsoDateTimeConverter()
                 }
             };
+
+            options?.ConfigureJsonSerializerSettings?.Invoke(settings);
+
+            return settings;
         }
 
         protected CosmosDatabase(Documents.IDocumentClient documentClient, CosmosClient cosmosClient, IDatabaseOptions options, bool initialize = true)

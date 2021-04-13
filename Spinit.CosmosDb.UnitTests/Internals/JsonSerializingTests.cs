@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -57,6 +58,7 @@ namespace Spinit.CosmosDb.UnitTests.Internals
             public string DatabaseId { get; set; }
             public string PreferredLocation { get; set; }
             public Action<JsonSerializerSettings> ConfigureJsonSerializerSettings { get; set; }
+            public Action<CosmosClientOptions> ConfigureCosmosClientOptions { get; set; }
         }
 
         public class VersionJsonConverter : JsonConverter

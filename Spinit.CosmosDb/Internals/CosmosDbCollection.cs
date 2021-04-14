@@ -31,12 +31,14 @@ namespace Spinit.CosmosDb
         private readonly Container _container;
         private readonly Documents.IDocumentClient _documentClient;
         private readonly CollectionModel _model;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
-        public CosmosDbCollection(Container container, Documents.IDocumentClient documentClient, CollectionModel model)
+        public CosmosDbCollection(Container container, Documents.IDocumentClient documentClient, CollectionModel model, JsonSerializerSettings settings = null)
         {
             _container = container;
             _documentClient = documentClient;
             _model = model;
+            _jsonSerializerSettings = settings ?? new JsonSerializerSettings();
         }
 
         public Task<SearchResponse<TEntity>> SearchAsync(ISearchRequest<TEntity> request) => SearchAsync<TEntity>(request);
@@ -186,10 +188,9 @@ namespace Spinit.CosmosDb
             {
                 throw new SpinitCosmosDbException(streamResponse.StatusCode, streamResponse.ErrorMessage);
             }
-            using var streamReader = new StreamReader(streamResponse.Content);
-            using var jsonTextReader = new JsonTextReader(streamReader);
 
-            var response = JsonConvert.DeserializeObject<CosmosStreamResponse<TProjection>>(streamReader.ReadToEnd());
+            using var streamReader = new StreamReader(streamResponse.Content);
+            var response = JsonConvert.DeserializeObject<CosmosStreamResponse<TProjection>>(streamReader.ReadToEnd(), _jsonSerializerSettings);
 
             return new SearchResponse<TProjection>
             {

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Azure.Cosmos;
+using Newtonsoft.Json;
 using System;
 
 namespace Spinit.CosmosDb
@@ -20,9 +21,10 @@ namespace Spinit.CosmosDb
         /// </summary>
         public string PreferredLocation { get; set; }
 
-        /// <summary>
-        /// Optional Json serialization settings configuration
-        /// </summary>
+        /// <inheritdoc/>
         public Action<JsonSerializerSettings> ConfigureJsonSerializerSettings { get; set; }
+
+        /// <inheritdoc/>
+        public Action<CosmosClientOptions> ConfigureCosmosClientOptions { get; set; }
     }
 }

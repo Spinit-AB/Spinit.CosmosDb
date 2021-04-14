@@ -60,7 +60,7 @@ namespace Spinit.CosmosDb
                 new CosmosClient(
                     new Uri(options.Endpoint).AbsoluteUri,
                     options.Key,
-                    new CosmosClientOptions()
+                    CreateCosmosClientOptions(options)
                 ), options, initialize)
         { }
 
@@ -76,6 +76,13 @@ namespace Spinit.CosmosDb
                 connectionPolicy.PreferredLocations.Add(options.PreferredLocation);
 
             return connectionPolicy;
+        }
+
+        internal static CosmosClientOptions CreateCosmosClientOptions(IDatabaseOptions options = null)
+        {
+            var clientOptions = new CosmosClientOptions();
+            options?.ConfigureCosmosClientOptions?.Invoke(clientOptions);
+            return clientOptions;
         }
 
         internal static JsonSerializerSettings CreateJsonSerializerSettings(IDatabaseOptions options = null)

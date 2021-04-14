@@ -53,6 +53,7 @@ namespace Spinit.CosmosDb
     {
         private readonly Documents.IDocumentClient _documentClient;
         private readonly IDatabaseOptions _options;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
         protected CosmosDatabase(IDatabaseOptions options, bool initialize = true)
             : this(
@@ -62,7 +63,8 @@ namespace Spinit.CosmosDb
                     options.Key,
                     CreateCosmosClientOptions(options)
                 ), options, initialize)
-        { }
+        {
+        }
 
         internal static Documents.Client.ConnectionPolicy CreateConnectionPolicy(IDatabaseOptions options)
         {
@@ -105,8 +107,9 @@ namespace Spinit.CosmosDb
         {
             _documentClient = documentClient;
             CosmosClient = cosmosClient;
+            _jsonSerializerSettings = CreateJsonSerializerSettings(options);
             _options = options;
-
+            
             if (initialize)
             {
                 Initialize();
@@ -174,7 +177,7 @@ namespace Spinit.CosmosDb
             if (string.IsNullOrEmpty(collectionModel.CollectionId))
                 collectionModel.CollectionId = collectionProperty.GetCollectionId();
 
-            var collection = new CosmosDbCollection<TEntity>(CosmosClient.GetContainer(collectionModel.DatabaseId, collectionModel.CollectionId), _documentClient, collectionModel);
+            var collection = new CosmosDbCollection<TEntity>(CosmosClient.GetContainer(collectionModel.DatabaseId, collectionModel.CollectionId), _documentClient, collectionModel, _jsonSerializerSettings);
             collectionProperty.SetValue(this, collection);
         }
 

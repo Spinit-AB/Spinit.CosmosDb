@@ -188,8 +188,8 @@ namespace Spinit.CosmosDb
             {
                 throw new SpinitCosmosDbException(streamResponse.StatusCode, streamResponse.ErrorMessage);
             }
+
             using var streamReader = new StreamReader(streamResponse.Content);
-            using var jsonTextReader = new JsonTextReader(streamReader);
             var response = JsonConvert.DeserializeObject<CosmosStreamResponse<TProjection>>(streamReader.ReadToEnd(), _jsonSerializerSettings);
 
             return new SearchResponse<TProjection>

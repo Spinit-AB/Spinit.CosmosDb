@@ -9,11 +9,11 @@ namespace Spinit.CosmosDb
         public DbEntry()
         { }
 
-        public DbEntry(TEntity entity, Analyzer analyzer)
+        public DbEntry(TEntity entity, Analyzer analyzer, JsonSerializerSettings jsonSerializerSettings)
         {
             Id = entity.Id;
             Original = entity;
-            Normalized = entity.CreateNormalized();
+            Normalized = entity.CreateNormalized(jsonSerializerSettings);
             All = analyzer.AnalyzeEntity(entity);
         }
 

@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 
 namespace Spinit.CosmosDb
 {
-    // TODO: remove TotalCount and eventually replace with a "Count(ISearchRequest request)" call
     public interface ISearchRequest<T>
         where T : class
     {
@@ -11,7 +10,7 @@ namespace Spinit.CosmosDb
 
         int? PageSize { get; }
         /// <summary>
-        /// Should <see cref="SearchResponse{T}.TotalCount"/> be calculated. This is currently a resource heavy operation, use sparingly.
+        /// Should <see cref="SearchResponse{T}.TotalCount"/> be calculated.
         /// </summary>
         bool IncludeTotalCount { get; }
         string ContinuationToken { get; }
@@ -29,7 +28,7 @@ namespace Spinit.CosmosDb
 
         public virtual int? PageSize { get; set; } = 20;
         /// <summary>
-        /// Should <see cref="SearchResponse{T}.TotalCount"/> be calculated. This is currently a resource heavy operation, use sparingly.
+        /// Should <see cref="SearchResponse{T}.TotalCount"/> be calculated.
         /// </summary>
         public virtual bool IncludeTotalCount { get; set; } = false;
         public virtual string ContinuationToken { get; set; }

@@ -67,5 +67,12 @@ namespace Spinit.CosmosDb
         /// <param name="throughput">The new throughput to set. Must be between 400 and 1000000 in increments of 100.</param>
         /// <returns></returns>
         Task SetThroughputAsync(int throughput);
+
+        /// <summary>
+        /// Gets the number of entities.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<int> CountAsync(ISearchRequest<TEntity> request);
     }
 }

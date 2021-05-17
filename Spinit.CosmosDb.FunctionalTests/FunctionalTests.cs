@@ -43,6 +43,22 @@ namespace Spinit.CosmosDb.FunctionalTests
 
         [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
+        public async Task TestCountAll()
+        {
+            var count = await _database.Todos.CountAsync(new SearchRequest<TodoItem> { });
+            Assert.Equal(10, count);
+        }
+
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        public async Task TestCountWithFilter()
+        {
+            var count = await _database.Todos.CountAsync(new SearchRequest<TodoItem> { Filter = x => x.Status == TodoStatus.Done });
+            Assert.Equal(4, count);
+        }
+
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
         public async Task TestEmptySearch()
         {
             var expectedItemCount = GetTodoItems().Count();

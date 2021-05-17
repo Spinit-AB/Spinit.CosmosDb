@@ -135,6 +135,14 @@ namespace Spinit.CosmosDb
             } while (bulkDeleteResponse.NumberOfDocumentsDeleted < entries.Count && bulkDeleteResponse.NumberOfDocumentsDeleted > 0);
         }
 
+        public async Task<int> CountAsync(ISearchRequest<TEntity> request)
+        {
+            var query = CreateQuery(request);
+            var result = await query.CountAsync().ConfigureAwait(false);
+
+            return result.Resource;
+        }
+
         public Task<int?> GetThroughputAsync()
         {
             return _container.ReadThroughputAsync();
@@ -153,10 +161,40 @@ namespace Spinit.CosmosDb
         internal protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)
             where TProjection : class, ICosmosEntity
         {
+            var query = CreateQuery(request);
+
+            var queryDefinition = query
+                // Hack to get around bug: https://github.com/Azure/azure-cosmos-dotnet-v3/issues/1438
+                .Where(x => true)
+                .ToQueryDefinition();
+
+            var iterator = _container.GetItemQueryStreamIterator(queryDefinition, request.ContinuationToken, new QueryRequestOptions { MaxItemCount = request.PageSize });
+
+            using var streamResponse = await iterator.ReadNextAsync().ConfigureAwait(false);
+            if (streamResponse.StatusCode != HttpStatusCode.OK)
+            {
+                throw new SpinitCosmosDbException(streamResponse.StatusCode, streamResponse.ErrorMessage);
+            }
+
+            using var streamReader = new StreamReader(streamResponse.Content);
+            var response = JsonConvert.DeserializeObject<CosmosStreamResponse<TProjection>>(streamReader.ReadToEnd(), _jsonSerializerSettings);
+
+            return new SearchResponse<TProjection>
+            {
+                ContinuationToken = streamResponse.ContinuationToken,
+                Documents = response.Documents?.Select(x => x.Original),
+                TotalCount = request.IncludeTotalCount
+                    ? await query.CountAsync().ConfigureAwait(false)
+                    : (int?)null
+            };
+        }
+
+        private IQueryable<DbEntry<TEntity>> CreateQuery(ISearchRequest<TEntity> request)
+        {
             var query = _container.GetItemLinqQueryable<DbEntry<TEntity>>(
-                    continuationToken: request.ContinuationToken,
-                    requestOptions: new QueryRequestOptions { MaxItemCount = request.PageSize })
-                .AsQueryable();
+                                continuationToken: request.ContinuationToken,
+                                requestOptions: new QueryRequestOptions { MaxItemCount = request.PageSize })
+                            .AsQueryable();
 
             if (!string.IsNullOrEmpty(request.Query))
             {
@@ -177,29 +215,7 @@ namespace Spinit.CosmosDb
                     : query.OrderByDescending(request.SortBy.RemapTo<DbEntry<TEntity>, TEntity, object>(x => x.Normalized));
             }
 
-            var queryDefinition = query
-                // Hack to get around bug: https://github.com/Azure/azure-cosmos-dotnet-v3/issues/1438
-                .Where(x => true)
-                .ToQueryDefinition();
-            var iterator = _container.GetItemQueryStreamIterator(queryDefinition, request.ContinuationToken, new QueryRequestOptions { MaxItemCount = request.PageSize });
-
-            using var streamResponse = await iterator.ReadNextAsync().ConfigureAwait(false);
-            if (streamResponse.StatusCode != HttpStatusCode.OK)
-            {
-                throw new SpinitCosmosDbException(streamResponse.StatusCode, streamResponse.ErrorMessage);
-            }
-
-            using var streamReader = new StreamReader(streamResponse.Content);
-            var response = JsonConvert.DeserializeObject<CosmosStreamResponse<TProjection>>(streamReader.ReadToEnd(), _jsonSerializerSettings);
-
-            return new SearchResponse<TProjection>
-            {
-                ContinuationToken = streamResponse.ContinuationToken,
-                Documents = response.Documents?.Select(x => x.Original),
-                TotalCount = request.IncludeTotalCount
-                    ? await query.CountAsync().ConfigureAwait(false)
-                    : (int?)null
-            };
+            return query;
         }
 
         private Uri GetCollectionUri()

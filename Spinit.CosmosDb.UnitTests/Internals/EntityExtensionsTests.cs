@@ -15,7 +15,7 @@ namespace Spinit.CosmosDb.UnitTests
             {
                 var fixture = new Fixture();
                 _original = fixture.Create<TestEntity>();
-                _normalized = _original.CreateNormalized();
+                _normalized = _original.CreateNormalized(new Newtonsoft.Json.JsonSerializerSettings());
             }
 
             [Fact]

@@ -90,7 +90,7 @@ namespace Spinit.CosmosDb
             var bulkExecutor = new BulkExecutor(_documentClient as Documents.Client.DocumentClient, documentCollection);
             await bulkExecutor.InitializeAsync().ConfigureAwait(false);
 
-            var entries = entities.Select(x => new DbEntry<TEntity>(x, _model.Analyzer));
+            var entries = entities.Select(x => new DbEntry<TEntity>(x, _model.Analyzer, _jsonSerializerSettings));
 
             BulkImportResponse bulkImportResponse = null;
             do
@@ -107,7 +107,7 @@ namespace Spinit.CosmosDb
         public Task UpsertAsync(TEntity document)
         {
             // TODO: handle HTTP 429 (Too Many Requests) errors
-            var entry = new DbEntry<TEntity>(document, _model.Analyzer);
+            var entry = new DbEntry<TEntity>(document, _model.Analyzer, _jsonSerializerSettings);
 
             return _container.UpsertItemAsync(entry, new PartitionKey(entry.Id));
         }

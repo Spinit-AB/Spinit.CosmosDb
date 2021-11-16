@@ -66,7 +66,7 @@ jobs:
       run: dotnet test --configuration Release --no-restore --verbosity normal
 
     - name: Package artifact
-      run: dotnet pack Spinit.CosmosDb/Spinit.CosmosDb.csproj --configuration $(BuildConfiguration) /p:VersionPrefix=${{ env.BUILD_VersionPrefix }} /p:VersionSuffix=${{ env.BUILD_VersionSuffix }} -o ${{ github.workspace }}/artifact
+      run: dotnet pack Spinit.CosmosDb/Spinit.CosmosDb.csproj --configuration Release /p:VersionPrefix=${{ env.BUILD_VersionPrefix }} /p:VersionSuffix=${{ env.BUILD_VersionSuffix }} -o ${{ github.workspace }}/artifact
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2

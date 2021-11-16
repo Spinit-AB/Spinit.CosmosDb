@@ -45,7 +45,7 @@ jobs:
             {
                 $now = (Get-Date).ToUniversalTime()
                 $VersionPrefix = ([Version]$now.ToString("0.yyyy.MMdd.HHmm")).ToString(4)
-                $VersionSuffix = "ci$($Env:GITHUB_SHA.SubString(0,7))"
+                $VersionSuffix = "$Env:GITHUB_SHA.SubString(0,7)"
                 $Version = $VersionPrefix + '-' + $VersionSuffix
             }
 
@@ -64,6 +64,15 @@ jobs:
     
     - name: Test
       run: dotnet test --configuration Release --no-restore --verbosity normal
+
+    - name: Package artifact
+      run: dotnet pack Spinit.CosmosDb/Spinit.CosmosDb.csproj -o ${{ github.workspace }}/artifact
+
+    - name: Upload artifact
+    - uses: actions/upload-artifact@v2
+      with:
+        name: nuget
+        path: ${{ github.workspace }}/artifact/**/*
       
     #- name: Publish the package to nuget.org
     #  run: dotnet nuget push */bin/Release/*.nupkg -k $NUGET_AUTH_TOKEN -s https://api.nuget.org/v3/index.json

@@ -10,10 +10,17 @@ env:
 
 jobs:
 
-  extract-metadata:
-    name: Extract metadata
+  build-and-test:
+    name: Build and test
     runs-on: windows-latest
+    needs: extract-metadata
     steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
     - name: Extract version and build numbers
       shell: pwsh
       run: |
@@ -45,17 +52,6 @@ jobs:
             echo "BUILD_VersionSuffix=$VersionSuffix" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
             echo "BUILD_BuildNumber=$BuildNumber" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
 
-  build-and-test:
-    name: Build and test
-    runs-on: windows-latest
-    needs: extract-metadata
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-
     - name: Install dependencies
       run: dotnet restore
       
@@ -71,6 +67,37 @@ jobs:
     environment: NugetDeploy
     needs: [extract-metadata, build-and-test]
     steps:
+
+    - name: Extract version and build numbers
+      shell: pwsh
+      run: |
+            if ($Env:GITHUB_REF.StartsWith('refs/tags/', 'OrdinalIgnoreCase'))
+            {
+                if ($Env:GITHUB_REF_NAME -match "^v(?<VersionPrefix>\d+\.\d+\.\d+)(-(?<VersionSuffix>.*))?$")
+                {
+                    $Version = $Env:GITHUB_REF_NAME.Substring(1)
+                    $VersionPrefix = ([Version]$Matches['VersionPrefix']).ToString(3)
+                    $VersionSuffix = $Matches['VersionSuffix']
+                }
+                else
+                {
+                    throw 'Invalid version tag, build can not continue'
+                }
+            }
+            else
+            {
+                $now = (Get-Date).ToUniversalTime()
+                $VersionPrefix = ([Version]$now.ToString("0.yyyy.MMdd.HHmm")).ToString(4)
+                $VersionSuffix = "$Env:GITHUB_SHA.SubString(0,7)"
+                $Version = $VersionPrefix + '-' + $VersionSuffix
+            }
+
+            $BuildNumber = "$VERSION.$env:GITHUB_RUN_NUMBER"
+
+            echo "BUILD_Version=$Version" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+            echo "BUILD_VersionPrefix=$VersionPrefix" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+            echo "BUILD_VersionSuffix=$VersionSuffix" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+            echo "BUILD_BuildNumber=$BuildNumber" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
 
     - name: Package artifact
       run: dotnet pack Spinit.CosmosDb/Spinit.CosmosDb.csproj --configuration Release /p:VersionPrefix=${{ env.BUILD_VersionPrefix }} /p:VersionSuffix=${{ env.BUILD_VersionSuffix }} -o ${{ github.workspace }}/artifact

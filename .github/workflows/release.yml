@@ -14,7 +14,6 @@ on:
 
 env:
   DOTNET_VERSION: '3.1.x' # The .NET SDK version to use
-  ASSEMBLY_VERSION: ${{ env.DOTNET_VERSION }}
 
 jobs:
   build-and-test:

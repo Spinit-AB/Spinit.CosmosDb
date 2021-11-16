@@ -69,7 +69,7 @@ jobs:
       run: dotnet pack Spinit.CosmosDb/Spinit.CosmosDb.csproj -o ${{ github.workspace }}/artifact
 
     - name: Upload artifact
-    - uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v2
       with:
         name: nuget
         path: ${{ github.workspace }}/artifact/**/*

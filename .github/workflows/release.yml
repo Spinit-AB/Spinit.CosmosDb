@@ -13,7 +13,6 @@ jobs:
   build-and-test:
     name: Build and test
     runs-on: windows-latest
-    needs: extract-metadata
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
@@ -65,7 +64,7 @@ jobs:
     name: Deploy
     runs-on: windows-latest
     environment: NugetDeploy
-    needs: [extract-metadata, build-and-test]
+    needs: [build-and-test]
     steps:
 
     - name: Extract version and build numbers

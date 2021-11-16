@@ -1,0 +1,72 @@
+name: Build, Test and Release to Nuget
+
+on:
+  push:
+    tags: 
+    - '*.*.*'
+
+env:
+  DOTNET_VERSION: '3.1.x' # The .NET SDK version to use
+  ASSEMBLY_VERSION: ${{ env.DOTNET_VERSION }}
+
+jobs:
+  build-and-test:
+
+    name: build-and-test-${{matrix.os}}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+
+    - name: Extract version and build numbers
+      shell: pwsh
+      run: |
+            if ($Env:GITHUB_REF.StartsWith('refs/tags/', 'OrdinalIgnoreCase'))
+            {
+                if ($Env:GITHUB_REF_NAME -match "^v(?<VersionPrefix>\d+\.\d+\.\d+)(-(?<VersionSuffix>.*))?$")
+                {
+                    $Version = $Env:GITHUB_REF_NAME.Substring(1)
+                    $VersionPrefix = ([Version]$Matches['VersionPrefix']).ToString(3)
+                    $VersionSuffix = $Matches['VersionSuffix']
+                }
+                else
+                {
+                    throw 'Invalid version tag, build can not continue'
+                }
+            }
+            else
+            {
+                $now = (Get-Date).ToUniversalTime()
+                $VersionPrefix = ([Version]$now.ToString("0.yyyy.MMdd.HHmm")).ToString(4)
+                $VersionSuffix = "ci$($Env:GITHUB_SHA.SubString(0,7))"
+                $Version = $VersionPrefix + '-' + $VersionSuffix
+            }
+
+            $BuildNumber = "$VERSION.$env:GITHUB_RUN_NUMBER"
+
+            echo "BUILD_Version=$Version" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+            echo "BUILD_VersionPrefix=$VersionPrefix" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+            echo "BUILD_VersionSuffix=$VersionSuffix" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+            echo "BUILD_BuildNumber=$BuildNumber" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+
+    - name: Install dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --configuration Release --no-restore /p:VersionPrefix=${{ env.BUILD_VersionPrefix }} /p:VersionSuffix=${{ env.BUILD_VersionSuffix }}
+    
+    - name: Test
+      run: dotnet test --configuration Release --no-restore --verbosity normal
+      
+    #- name: Publish the package to nuget.org
+    #  run: dotnet nuget push */bin/Release/*.nupkg -k $NUGET_AUTH_TOKEN -s https://api.nuget.org/v3/index.json
+    #  env:
+    #    NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}

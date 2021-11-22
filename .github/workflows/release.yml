@@ -81,4 +81,4 @@ jobs:
         path: ${{ github.workspace }}/artifact/**/*
 
     - name: Publish the package to nuget.org
-      run: dotnet nuget push ${{ github.workspace }}\artifact\*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ env.NUGET_AUTH_TOKEN }}
+      run: dotnet nuget push ${{ github.workspace }}\artifact\*.nupkg -s https://api.nuget.org/v3/index.json

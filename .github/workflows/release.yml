@@ -37,9 +37,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        source-url: https://api.nuget.org/v3/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
 
     - name: Extract version and build numbers
       shell: pwsh
@@ -82,4 +79,4 @@ jobs:
         path: ${{ github.workspace }}/artifact/**/*
 
     - name: Publish the package to nuget.org
-      run: dotnet nuget push ${{ github.workspace }}\artifact\*.nupkg
+      run: dotnet nuget push ${{ github.workspace }}\artifact\*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_TOKEN }}

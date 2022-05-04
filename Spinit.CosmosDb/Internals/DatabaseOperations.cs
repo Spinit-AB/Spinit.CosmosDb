@@ -51,7 +51,7 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Sets the throughput (RU/s) for the database.
         /// </summary>
-        /// <param name="throughputProperties">The new throughputProeprties to set.
+        /// <param name="throughputProperties">The new throughputProperties to set.</param>
         /// <returns></returns>
         public Task SetThroughputAsync(ThroughputProperties throughputProperties)
         {

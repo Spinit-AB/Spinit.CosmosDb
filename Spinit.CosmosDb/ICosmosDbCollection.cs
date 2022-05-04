@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 
 namespace Spinit.CosmosDb
 {
@@ -59,14 +60,14 @@ namespace Spinit.CosmosDb
         /// Gets the throughput (RU/s) set for the collection.
         /// </summary>
         /// <returns>The collection's throughput</returns>
-        Task<int?> GetThroughputAsync();
+        Task<ThroughputProperties> GetThroughputAsync();
 
         /// <summary>
         /// Sets the throughput (RU/s) for the collection.
         /// </summary>
-        /// <param name="throughput">The new throughput to set. Must be between 400 and 1000000 in increments of 100.</param>
+        /// <param name="throughputProperties">The new throughput to set. Must be between 400 and 1000000 in increments of 100.</param>
         /// <returns></returns>
-        Task SetThroughputAsync(int throughput);
+        Task SetThroughputAsync(ThroughputProperties throughputProperties);
 
         /// <summary>
         /// Gets the number of entities.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 using Spinit.CosmosDb.FunctionalTests.Infrastructure;
 using Xunit;
 
@@ -26,23 +27,23 @@ namespace Spinit.CosmosDb.FunctionalTests
         [TestOrder]
         public async Task TestReadDatabaseThroughput()
         {
-            var throughput = await _database.Operations.GetThroughputAsync();
-            Assert.Equal(1000, throughput);
+            var throughputProperties = await _database.Operations.GetThroughputAsync();
+            Assert.Equal(1000, throughputProperties.Throughput);
         }
 
         [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         public async Task TestSetDatabaseThroughput()
         {
-            await _database.Operations.SetThroughputAsync(400);
+            await _database.Operations.SetThroughputAsync(ThroughputProperties.CreateManualThroughput(400));
         }
 
         [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
         public async Task TestGetDatabaseThroughputAfterSet()
         {
-            var throughput = await _database.Operations.GetThroughputAsync();
-            Assert.Equal(400, throughput);
+            var throughputProperties = await _database.Operations.GetThroughputAsync();
+            Assert.Equal(400, throughputProperties.Throughput);
         }
 
         [Fact(Skip = FunctionTestsConfiguration.SkipTests)]

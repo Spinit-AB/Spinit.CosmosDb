@@ -22,9 +22,9 @@ namespace Spinit.CosmosDb
         /// <returns></returns>
         public Task CreateIfNotExistsAsync(CreateDbOptions options = null)
         {
-            if (options != null && !ThroughputValidator.IsValidThroughput(options.Throughput))
+            if (options != null && options.ThroughputProperties is { }  throughput && !ThroughputValidator.IsValidThroughput(throughput, out var message))
             {
-                throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.");
+                throw new ArgumentException(message);
             }
 
             return CreateIfNotExistsInternalAsync(options);
@@ -43,31 +43,31 @@ namespace Spinit.CosmosDb
         /// Gets the throughput (RU/s) set for the collection.
         /// </summary>
         /// <returns></returns>
-        public Task<int?> GetThroughputAsync()
+        public async Task<ThroughputProperties> GetThroughputAsync()
         {
-            return _cosmosClient.GetDatabase(_database.Model.DatabaseId).ReadThroughputAsync();
+            return await _cosmosClient.GetDatabase(_database.Model.DatabaseId).ReadThroughputAsync(new RequestOptions()).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Sets the throughput (RU/s) for the database.
         /// </summary>
-        /// <param name="throughput">The new throughput to set. Must be between 400 and 1000000 in increments of 100.</param>
+        /// <param name="throughputProperties">The new throughputProeprties to set.
         /// <returns></returns>
-        public Task SetThroughputAsync(int throughput)
+        public Task SetThroughputAsync(ThroughputProperties throughputProperties)
         {
-            if (!ThroughputValidator.IsValidThroughput(throughput))
+            if (throughputProperties is { } && !ThroughputValidator.IsValidThroughput(throughputProperties, out var message))
             {
-                throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.", nameof(throughput));
+                throw new ArgumentException(message, nameof(throughputProperties));
             }
 
-            return _cosmosClient.GetDatabase(_database.Model.DatabaseId).ReplaceThroughputAsync(throughput);
+            return _cosmosClient.GetDatabase(_database.Model.DatabaseId).ReplaceThroughputAsync(throughputProperties);
         }
 
         private async Task CreateIfNotExistsInternalAsync(CreateDbOptions options = null)
         {
             var databaseId = _database.Model.DatabaseId;
-            var databaseThroughput = options != null && options.ThroughputType == ThroughputType.Database ? options.Throughput : (int?)null;
-            var containerThroughput = options != null && options.ThroughputType == ThroughputType.Container ? options.Throughput : (int?)null;
+            var databaseThroughput = options != null && options.ThroughputType == ThroughputType.Database ? options.ThroughputProperties : (ThroughputProperties) null;
+            var containerThroughput = options != null && options.ThroughputType == ThroughputType.Container ? options.ThroughputProperties : (ThroughputProperties) null;
 
             await _cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId, databaseThroughput).ConfigureAwait(false);
             foreach (var collectionModel in _database.Model.CollectionModels)

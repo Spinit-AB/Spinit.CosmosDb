@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 using Spinit.CosmosDb.FunctionalTests.Infrastructure;
 using Xunit;
 
@@ -25,10 +26,10 @@ namespace Spinit.CosmosDb.FunctionalTests
             var database = new DummyDatabase();
             
             await database.Operations.CreateIfNotExistsAsync();
-            var throughput = await database.Dummies.GetThroughputAsync();
+            var throughputProperties = await database.Dummies.GetThroughputAsync();
             await database.Operations.DeleteAsync();
 
-            Assert.Equal(400, throughput);
+            Assert.Equal(400, throughputProperties.Throughput);
         }
         
         [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
@@ -40,10 +41,10 @@ namespace Spinit.CosmosDb.FunctionalTests
             var database = new DummyDatabase();
 
             await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(defaultThroughput, ThroughputType.Container));
-            var throughput = await database.Dummies.GetThroughputAsync();
+            var throughputProperties = await database.Dummies.GetThroughputAsync();
             await database.Operations.DeleteAsync();
 
-            Assert.Equal(expected, throughput);
+            Assert.Equal(expected, throughputProperties.Throughput);
         }
 
         [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
@@ -61,6 +62,19 @@ namespace Spinit.CosmosDb.FunctionalTests
 
         [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
         [TestOrder]
+        [InlineData(400)]
+        [InlineData(3999)]
+        [InlineData(4500)]
+        [InlineData(1001000)]
+        public async Task TestCreateDatabaseWithInvalidAutoscaleThroughputSet(int maxThroughput)
+        {
+            var database = new DummyDatabase();
+
+            await Assert.ThrowsAsync<ArgumentException>(async () => await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(ThroughputProperties.CreateAutoscaleThroughput(maxThroughput), ThroughputType.Container)));
+        }
+
+        [Theory(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
         [InlineData(500, 500)]
         [InlineData(1000, 1000)]
         public async Task TestCreateDatabaseWithDefaultDatabaseThroughputSet(int defaultThroughput, int expected)
@@ -68,10 +82,37 @@ namespace Spinit.CosmosDb.FunctionalTests
             var database = new DummyDatabase();
 
             await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(defaultThroughput, ThroughputType.Database));
-            var throughput = await database.Operations.GetThroughputAsync();
+            var throughputProperties = await database.Operations.GetThroughputAsync();
             await database.Operations.DeleteAsync();
 
-            Assert.Equal(expected, throughput);
+            Assert.Equal(expected, throughputProperties.Throughput);
+        }
+
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        public async Task TestCreateDatabaseWithCustomContainerThroughputSet()
+        {
+            var database = new DummyDatabase();
+
+            await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(ThroughputProperties.CreateManualThroughput(500), ThroughputType.Container));
+            var throughputProperties = await database.Dummies.GetThroughputAsync();
+            await database.Operations.DeleteAsync();
+
+            Assert.Equal(500, throughputProperties.Throughput);
+        }
+
+        [Fact(Skip = FunctionTestsConfiguration.SkipTests)]
+        [TestOrder]
+        public async Task TestCreateDatabaseWithAutoscaleContainerThroughputSet()
+        {
+            var database = new DummyDatabase();
+
+            await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(ThroughputProperties.CreateAutoscaleThroughput(4000), ThroughputType.Container));
+            var throughputProperties = await database.Dummies.GetThroughputAsync();
+            await database.Operations.DeleteAsync();
+
+            Assert.Equal(400, throughputProperties.Throughput);
+            Assert.Equal(4000, throughputProperties.AutoscaleMaxThroughput);
         }
 
         public class DummyDatabase : CosmosDatabase

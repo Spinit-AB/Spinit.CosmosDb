@@ -24,7 +24,7 @@ namespace Spinit.CosmosDb.UnitTests.Validation
         [Theory]
         [InlineData(100, false)]
         [InlineData(400, false)]
-        [InlineData(1000, false)]
+        [InlineData(1000, true)]
         [InlineData(4000, true)]
         [InlineData(10000, true)]
         [InlineData(1000000, true)]

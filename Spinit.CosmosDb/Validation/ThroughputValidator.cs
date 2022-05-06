@@ -5,7 +5,7 @@ namespace Spinit.CosmosDb.Validation
     internal static class ThroughputValidator
     {
         internal static bool IsValidManualThroughput(int throughput) => throughput % 100 == 0 && throughput >= 400 && throughput <= 1000000;
-        internal static bool IsValidAutoscaleThroughput(int throughput) => throughput % 1000 == 0 && throughput >= 4000 && throughput <= 1000000;
+        internal static bool IsValidAutoscaleThroughput(int throughput) => throughput % 1000 == 0 && throughput >= 1000 && throughput <= 1000000;
 
         internal static bool IsValidThroughput(ThroughputProperties throughputProperties, out string message)
         {

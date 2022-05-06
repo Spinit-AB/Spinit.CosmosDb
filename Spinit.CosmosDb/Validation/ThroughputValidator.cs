@@ -16,7 +16,7 @@ namespace Spinit.CosmosDb.Validation
             }
             else if(throughputProperties.AutoscaleMaxThroughput is int autoscaleMaxThroughput && !IsValidAutoscaleThroughput(autoscaleMaxThroughput))
             {
-                message = "The provided autoscale throughput is not valid. Must be between 4000 and 1 000 000 and in increments of 1 000.";
+                message = "The provided autoscale throughput is not valid. Must be between 1 000 and 1 000 000 and in increments of 1 000.";
                 return false;
             }
 

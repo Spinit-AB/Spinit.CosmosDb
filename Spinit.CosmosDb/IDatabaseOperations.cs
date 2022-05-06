@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 
 namespace Spinit.CosmosDb
 {
@@ -22,13 +23,13 @@ namespace Spinit.CosmosDb
         /// Gets the throughput (RU/s) set for the collection.
         /// </summary>
         /// <returns></returns>
-        Task<int?> GetThroughputAsync();
+        Task<ThroughputProperties> GetThroughputAsync();
 
         /// <summary>
         /// Sets the throughput (RU/s) for the database.
         /// </summary>
-        /// <param name="throughput">The new throughput to set. Must be between 400 and 1000000 in increments of 100.</param>
+        /// <param name="throughputProperties">The new throughput to set. Must be between 400 and 1000000 in increments of 100.</param>
         /// <returns></returns>
-        Task SetThroughputAsync(int throughput);
+        Task SetThroughputAsync(ThroughputProperties throughputProperties);
     }
 }

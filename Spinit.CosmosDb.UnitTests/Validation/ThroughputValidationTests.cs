@@ -1,4 +1,5 @@
-﻿using Spinit.CosmosDb.Validation;
+﻿using Microsoft.Azure.Cosmos;
+using Spinit.CosmosDb.Validation;
 using Xunit;
 
 namespace Spinit.CosmosDb.UnitTests.Validation
@@ -14,9 +15,23 @@ namespace Spinit.CosmosDb.UnitTests.Validation
         [InlineData(10000, true)]
         [InlineData(1000000, true)]
         [InlineData(1000001, false)]
-        public void TestIsValidThoughput(int throughput, bool expected)
+        public void TestIsValidManualThoughput(int throughput, bool expected)
         {
-            var isValid = ThroughputValidator.IsValidThroughput(throughput);
+            var isValid = ThroughputValidator.IsValidThroughput(ThroughputProperties.CreateManualThroughput(throughput), out _);
+            Assert.Equal(expected, isValid);
+        }
+
+        [Theory]
+        [InlineData(100, false)]
+        [InlineData(400, false)]
+        [InlineData(1000, true)]
+        [InlineData(4000, true)]
+        [InlineData(10000, true)]
+        [InlineData(1000000, true)]
+        [InlineData(1000001, false)]
+        public void TestIsValidAutoscaleThoughput(int throughput, bool expected)
+        {
+            var isValid = ThroughputValidator.IsValidThroughput(ThroughputProperties.CreateAutoscaleThroughput(throughput), out _);
             Assert.Equal(expected, isValid);
         }
     }

@@ -1,4 +1,6 @@
-﻿namespace Spinit.CosmosDb
+﻿using Microsoft.Azure.Cosmos;
+
+namespace Spinit.CosmosDb
 {
     public class CreateDbOptions
     {
@@ -9,11 +11,22 @@
         /// <param name="throughputType">Where to set the default throughput. Sets the throughput for all containers if Container is selected.</param>
         public CreateDbOptions(int throughput, ThroughputType throughputType)
         {
-            Throughput = throughput;
+            ThroughputProperties = ThroughputProperties.CreateManualThroughput(throughput);
             ThroughputType = throughputType;
         }
 
-        public int Throughput { get; }
+        /// <summary>
+        /// Options for when creating a new database.
+        /// </summary>
+        /// <param name="throughputProperties">The throughput to set.</param>
+        /// <param name="throughputType">Where to set the default throughput. Sets the throughput for all containers if Container is selected.</param>
+        public CreateDbOptions(ThroughputProperties throughputProperties, ThroughputType throughputType)
+        {
+            ThroughputProperties = throughputProperties;
+            ThroughputType = throughputType;
+        }
+
+        public ThroughputProperties ThroughputProperties { get; }
         public ThroughputType ThroughputType { get; }
     }
 }

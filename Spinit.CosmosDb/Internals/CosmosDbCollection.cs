@@ -143,19 +143,19 @@ namespace Spinit.CosmosDb
             return result.Resource;
         }
 
-        public Task<int?> GetThroughputAsync()
+        public async Task<ThroughputProperties> GetThroughputAsync()
         {
-            return _container.ReadThroughputAsync();
+            return await _container.ReadThroughputAsync(new RequestOptions()).ConfigureAwait(false);
         }
 
-        public Task SetThroughputAsync(int throughput)
+        public Task SetThroughputAsync(ThroughputProperties throughputProperties)
         {
-            if (!ThroughputValidator.IsValidThroughput(throughput))
+            if (throughputProperties is { } && !ThroughputValidator.IsValidThroughput(throughputProperties, out var message))
             {
-                throw new ArgumentException("The provided throughput is not valid. Must be between 400 and 1000000 and in increments of 100.", nameof(throughput));
+                throw new ArgumentException(message, nameof(throughputProperties));
             }
 
-            return _container.ReplaceThroughputAsync(throughput);
+            return _container.ReplaceThroughputAsync(throughputProperties);
         }
 
         internal protected virtual async Task<SearchResponse<TProjection>> ExecuteSearchAsync<TProjection>(ISearchRequest<TEntity> request)

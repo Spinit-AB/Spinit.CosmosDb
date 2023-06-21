@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.Cosmos;
-using Documents = Microsoft.Azure.Documents;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -51,33 +50,19 @@ namespace Spinit.CosmosDb
     /// </summary>
     public abstract class CosmosDatabase
     {
-        private readonly Documents.IDocumentClient _documentClient;
         private readonly IDatabaseOptions _options;
         private readonly JsonSerializerSettings _jsonSerializerSettings;
 
         protected CosmosDatabase(IDatabaseOptions options, bool initialize = true)
             : this(
-                new Documents.Client.DocumentClient(new Uri(options.Endpoint), options.Key, connectionPolicy: CreateConnectionPolicy(options), serializerSettings: CreateJsonSerializerSettings(options)),
-                new CosmosClient(
-                    new Uri(options.Endpoint).AbsoluteUri,
-                    options.Key,
-                    CreateCosmosClientOptions(options)
-                ), options, initialize)
+                  new CosmosClient(
+                      accountEndpoint: new Uri(options.Endpoint).AbsoluteUri,
+                      authKeyOrResourceToken: options.Key,
+                      clientOptions: CreateCosmosClientOptions(options)),
+                  options, 
+                  initialize) 
         {
-        }
-
-        internal static Documents.Client.ConnectionPolicy CreateConnectionPolicy(IDatabaseOptions options)
-        {
-            var connectionPolicy = new Documents.Client.ConnectionPolicy
-            {
-                ConnectionMode = Documents.Client.ConnectionMode.Direct,
-                ConnectionProtocol = Documents.Client.Protocol.Tcp
-            };
-
-            if (!string.IsNullOrEmpty(options.PreferredLocation))
-                connectionPolicy.PreferredLocations.Add(options.PreferredLocation);
-
-            return connectionPolicy;
+            
         }
 
         internal static CosmosClientOptions CreateCosmosClientOptions(IDatabaseOptions options = null)
@@ -103,9 +88,8 @@ namespace Spinit.CosmosDb
             return settings;
         }
 
-        protected CosmosDatabase(Documents.IDocumentClient documentClient, CosmosClient cosmosClient, IDatabaseOptions options, bool initialize = true)
+        protected CosmosDatabase(CosmosClient cosmosClient, IDatabaseOptions options, bool initialize = true)
         {
-            _documentClient = documentClient;
             CosmosClient = cosmosClient;
             _jsonSerializerSettings = CreateJsonSerializerSettings(options);
             _options = options;
@@ -177,7 +161,7 @@ namespace Spinit.CosmosDb
             if (string.IsNullOrEmpty(collectionModel.CollectionId))
                 collectionModel.CollectionId = collectionProperty.GetCollectionId();
 
-            var collection = new CosmosDbCollection<TEntity>(CosmosClient.GetContainer(collectionModel.DatabaseId, collectionModel.CollectionId), _documentClient, collectionModel, _jsonSerializerSettings);
+            var collection = new CosmosDbCollection<TEntity>(CosmosClient.GetContainer(collectionModel.DatabaseId, collectionModel.CollectionId), collectionModel, _jsonSerializerSettings);
             collectionProperty.SetValue(this, collection);
         }
 

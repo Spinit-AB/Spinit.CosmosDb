@@ -5,9 +5,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
-using Microsoft.Azure.CosmosDB.BulkExecutor;
-using Microsoft.Azure.CosmosDB.BulkExecutor.BulkImport;
-using Microsoft.Azure.CosmosDB.BulkExecutor.BulkDelete;
 using Documents = Microsoft.Azure.Documents;
 using Spinit.Expressions;
 using System.IO;
@@ -29,14 +26,12 @@ namespace Spinit.CosmosDb
         where TEntity : class, ICosmosEntity
     {
         private readonly Container _container;
-        private readonly Documents.IDocumentClient _documentClient;
         private readonly CollectionModel _model;
         private readonly JsonSerializerSettings _jsonSerializerSettings;
 
-        public CosmosDbCollection(Container container, Documents.IDocumentClient documentClient, CollectionModel model, JsonSerializerSettings settings = null)
+        public CosmosDbCollection(Container container, CollectionModel model, JsonSerializerSettings settings = null)
         {
             _container = container;
-            _documentClient = documentClient;
             _model = model;
             _jsonSerializerSettings = settings ?? new JsonSerializerSettings();
         }
@@ -85,23 +80,18 @@ namespace Spinit.CosmosDb
 
         public async Task UpsertAsync(IEnumerable<TEntity> entities)
         {
-            var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
-
-            var bulkExecutor = new BulkExecutor(_documentClient as Documents.Client.DocumentClient, documentCollection);
-            await bulkExecutor.InitializeAsync().ConfigureAwait(false);
-
-            var entries = entities.Select(x => new DbEntry<TEntity>(x, _model.Analyzer, _jsonSerializerSettings));
-
-            BulkImportResponse bulkImportResponse = null;
-            do
+            if (_container.Database.Client.ClientOptions.AllowBulkExecution)
             {
-                bulkImportResponse = await bulkExecutor
-                    .BulkImportAsync(
-                        entries,
-                        enableUpsert: true,
-                        disableAutomaticIdGeneration: true)
-                    .ConfigureAwait(false);
-            } while (bulkImportResponse.NumberOfDocumentsImported < entries.Count());
+                var tasks = entities.Select(UpsertAsync);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
+            else
+            {
+                foreach (var entry in entities)
+                {
+                    await UpsertAsync(entry).ConfigureAwait(false);
+                }
+            }
         }
 
         public Task UpsertAsync(TEntity document)
@@ -119,20 +109,18 @@ namespace Spinit.CosmosDb
 
         public async Task DeleteAsync(IEnumerable<string> ids)
         {
-            var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
-
-            var bulkExecutor = new BulkExecutor(_documentClient as Documents.Client.DocumentClient, documentCollection);
-            await bulkExecutor.InitializeAsync().ConfigureAwait(false);
-
-            var entries = ids.Select(x => new Tuple<string, string>(x, x)).ToList();
-
-            BulkDeleteResponse bulkDeleteResponse = null;
-            do
+            if (_container.Database.Client.ClientOptions.AllowBulkExecution)
             {
-                bulkDeleteResponse = await bulkExecutor
-                    .BulkDeleteAsync(entries)
-                    .ConfigureAwait(false);
-            } while (bulkDeleteResponse.NumberOfDocumentsDeleted < entries.Count && bulkDeleteResponse.NumberOfDocumentsDeleted > 0);
+                var tasks = ids.Select(DeleteAsync);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
+            else
+            {
+                foreach (var id in ids)
+                {
+                    await DeleteAsync(id).ConfigureAwait(false);
+                }
+            }
         }
 
         public async Task<int> CountAsync(ISearchRequest<TEntity> request)
@@ -216,11 +204,6 @@ namespace Spinit.CosmosDb
             }
 
             return query;
-        }
-
-        private Uri GetCollectionUri()
-        {
-            return Documents.Client.UriFactory.CreateDocumentCollectionUri(_model.DatabaseId, _model.CollectionId);
         }
     }
 }

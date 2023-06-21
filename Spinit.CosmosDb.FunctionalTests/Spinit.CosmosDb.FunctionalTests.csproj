@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Spinit.CosmosDb\Spinit.CosmosDb.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Infrastructure\" />
+  </ItemGroup>
+
 </Project>

@@ -333,3 +333,4 @@ ASALocalRun/
 ########################################
 
 /Spinit.CosmosDb/Spinit.CosmosDb.xml
+appsettings.*.json

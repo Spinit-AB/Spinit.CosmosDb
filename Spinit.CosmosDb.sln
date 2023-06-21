@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spinit.CosmosDb.Tests", "Spinit.CosmosDb.Tests\Spinit.CosmosDb.Tests.csproj", "{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{0D78AA6C-0471-430B-8985-B3875C0D8B04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D78AA6C-0471-430B-8985-B3875C0D8B04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D78AA6C-0471-430B-8985-B3875C0D8B04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

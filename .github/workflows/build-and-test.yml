@@ -30,6 +30,13 @@ jobs:
       
     - name: Build
       run: dotnet build --configuration Release --no-restore
+
+    - name: Starting Cosmos Emulator
+      shell: pwsh
+      run: |
+        Write-Host "Starting CosmosDB Emulator"
+        Import-Module "C:/Program Files/Azure Cosmos DB Emulator/PSModules/Microsoft.Azure.CosmosDB.Emulator"
+        Start-CosmosDbEmulator -NoWait
     
     - name: Test
       run: dotnet test --configuration Release --no-restore --verbosity normal

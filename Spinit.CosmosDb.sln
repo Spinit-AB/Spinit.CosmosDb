@@ -5,15 +5,11 @@ VisualStudioVersion = 17.1.31903.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spinit.CosmosDb", "Spinit.CosmosDb\Spinit.CosmosDb.csproj", "{40EC2E59-8CA4-4E33-B884-1DF26E42B378}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{0000B1BF-A65B-4511-BE47-F4A8CDE354B1}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{49AB98E1-F6A6-46A0-87C1-53E0DD38EDD3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoApi", "TodoApi", "{92696A13-98F7-4B6D-BF63-90B25AC37344}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoApi", "Examples\TodoApi\TodoApi.csproj", "{8E61C596-01C7-4698-B326-485B1C9E7020}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spinit.CosmosDb.FunctionalTests", "Spinit.CosmosDb.FunctionalTests\Spinit.CosmosDb.FunctionalTests.csproj", "{0D78AA6C-0471-430B-8985-B3875C0D8B04}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DA8893A5-1795-4294-9234-A47E55996BB7}"
 	ProjectSection(SolutionItems) = preProject
@@ -21,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spinit.CosmosDb.Tests", "Spinit.CosmosDb.Tests\Spinit.CosmosDb.Tests.csproj", "{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spinit.CosmosDb.Tests", "Spinit.CosmosDb.Tests\Spinit.CosmosDb.Tests.csproj", "{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +33,6 @@ Global
 		{8E61C596-01C7-4698-B326-485B1C9E7020}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E61C596-01C7-4698-B326-485B1C9E7020}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E61C596-01C7-4698-B326-485B1C9E7020}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0D78AA6C-0471-430B-8985-B3875C0D8B04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0D78AA6C-0471-430B-8985-B3875C0D8B04}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0D78AA6C-0471-430B-8985-B3875C0D8B04}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0D78AA6C-0471-430B-8985-B3875C0D8B04}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5C4BC89-11C3-4BD9-BF3D-B999424643A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -52,7 +44,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{92696A13-98F7-4B6D-BF63-90B25AC37344} = {49AB98E1-F6A6-46A0-87C1-53E0DD38EDD3}
 		{8E61C596-01C7-4698-B326-485B1C9E7020} = {92696A13-98F7-4B6D-BF63-90B25AC37344}
-		{0D78AA6C-0471-430B-8985-B3875C0D8B04} = {0000B1BF-A65B-4511-BE47-F4A8CDE354B1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7EFC6537-EC59-4A1B-9DAB-6C6CE92A7C4A}

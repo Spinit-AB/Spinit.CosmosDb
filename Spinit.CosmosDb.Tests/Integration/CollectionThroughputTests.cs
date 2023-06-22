@@ -4,17 +4,16 @@ using Microsoft.Azure.Cosmos;
 using Spinit.CosmosDb.Tests.Core;
 using Spinit.CosmosDb.Tests.Core.Order;
 using Xunit;
-using static Spinit.CosmosDb.Tests.Integration.FunctionalCollectionThroughputTests;
 
 namespace Spinit.CosmosDb.Tests.Integration
 {
     [TestCaseOrderer("Spinit.CosmosDb.Tests.Core.Order.TestCaseByAttributeOrderer", "Spinit.CosmosDb.Tests")]
     [Collection("DatabaseIntegrationTest")]
-    public class FunctionalCollectionThroughputTests : IClassFixture<TestDatabaseFixture>
+    public class CollectionThroughputTests : IClassFixture<CollectionThroughputTests.TestDatabaseFixture>
     {
         private readonly TestDatabase _database;
 
-        public FunctionalCollectionThroughputTests(TestDatabaseFixture fixture)
+        public CollectionThroughputTests(TestDatabaseFixture fixture)
         {
             _database = fixture.Database;
         }

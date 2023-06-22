@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Spinit.CosmosDb.UnitTests")]
 [assembly: InternalsVisibleTo("Spinit.CosmosDb.Tests")]
 
 // Message supressions

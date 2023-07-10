@@ -7,7 +7,7 @@ namespace Spinit.CosmosDb.Tests.Core
         public CosmosDatabaseFixture(DatabaseFixture databaseFixture)
         {
             DatabaseFixture = databaseFixture;
-            Database = databaseFixture.CreateDatabase<TDatabase>();
+            Database = databaseFixture.CreateCosmosDbDatabase<TDatabase>();
         }
 
         public DatabaseFixture DatabaseFixture { get; }

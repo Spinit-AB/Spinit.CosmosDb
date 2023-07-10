@@ -17,7 +17,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         [TestOrder]
         public async Task TestCreateDatabase()
         {
-            var database = Adapter.CreateDatabase<DummyDatabase>();
+            var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
 
             await database.Operations.CreateIfNotExistsAsync();
             await database.Operations.DeleteAsync();
@@ -27,7 +27,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         [TestOrder]
         public async Task TestCreateDatabaseWithoutDefaultThroughputSet()
         {
-            var database = Adapter.CreateDatabase<DummyDatabase>();
+            var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
 
             await database.Operations.CreateIfNotExistsAsync();
             var throughputProperties = await database.Dummies.GetThroughputAsync();
@@ -42,7 +42,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         [InlineData(1000, 1000)]
         public async Task TestCreateDatabaseWithtDefaultContainerThroughputSet(int defaultThroughput, int expected)
         {
-            var database = Adapter.CreateDatabase<DummyDatabase>();
+            var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
 
             await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(defaultThroughput, ThroughputType.Container));
             var throughputProperties = await database.Dummies.GetThroughputAsync();
@@ -59,7 +59,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         [InlineData(999)]
         public async Task TestCreateDatabaseWithInvalidThroughputSet(int defaultThroughput)
         {
-            var database = Adapter.CreateDatabase<DummyDatabase>();
+            var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
 
             await Assert.ThrowsAsync<ArgumentException>(async () => await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(defaultThroughput, ThroughputType.Container)));
         }
@@ -72,7 +72,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         [InlineData(1001000)]
         public async Task TestCreateDatabaseWithInvalidAutoscaleThroughputSet(int maxThroughput)
         {
-            var database = Adapter.CreateDatabase<DummyDatabase>();
+            var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
 
             await Assert.ThrowsAsync<ArgumentException>(async () => await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(ThroughputProperties.CreateAutoscaleThroughput(maxThroughput), ThroughputType.Container)));
         }
@@ -83,7 +83,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         [InlineData(1000, 1000)]
         public async Task TestCreateDatabaseWithDefaultDatabaseThroughputSet(int defaultThroughput, int expected)
         {
-            var database = Adapter.CreateDatabase<DummyDatabase>();
+            var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
 
             await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(defaultThroughput, ThroughputType.Database));
             var throughputProperties = await database.Operations.GetThroughputAsync();
@@ -96,7 +96,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         [TestOrder]
         public async Task TestCreateDatabaseWithCustomContainerThroughputSet()
         {
-            var database = Adapter.CreateDatabase<DummyDatabase>();
+            var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
 
             await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(ThroughputProperties.CreateManualThroughput(500), ThroughputType.Container));
             var throughputProperties = await database.Dummies.GetThroughputAsync();
@@ -113,7 +113,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         [InlineData(100000)]
         public async Task TestCreateDatabaseWithAutoscaleContainerThroughputSet(int maxThroughput)
         {
-            var database = Adapter.CreateDatabase<DummyDatabase>();
+            var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
 
             await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(ThroughputProperties.CreateAutoscaleThroughput(maxThroughput), ThroughputType.Container));
             var throughputProperties = await database.Dummies.GetThroughputAsync();

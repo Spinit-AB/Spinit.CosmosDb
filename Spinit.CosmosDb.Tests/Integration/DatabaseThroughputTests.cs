@@ -59,7 +59,7 @@ namespace Spinit.CosmosDb.Tests.Integration
             public TestDatabaseFixture()
             {
                 Adapter = new DatabaseAdapter(databaseName: "Database_Throughput_Tests");
-                Database = Adapter.CreateDatabase<TestDatabase>();
+                Database = Adapter.CreateCosmosDbDatabase<TestDatabase>();
             }
 
             public TestDatabase Database { get; }

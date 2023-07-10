@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Spinit.CosmosDb.UnitTests
+namespace Spinit.CosmosDb.Tests.Unit
 {
     public class DatabaseOptionsBuilderTests
     {

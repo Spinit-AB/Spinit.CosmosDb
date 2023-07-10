@@ -22,7 +22,7 @@ namespace Spinit.CosmosDb.Tests.Core
             await Client.CreateDatabaseIfNotExistsAsync(DatabaseName);
         }
 
-        public TDatabase CreateDatabase<TDatabase>(Action<DatabaseOptionsBuilder<TDatabase>>? options = null) where TDatabase : CosmosDatabase
+        public TDatabase CreateCosmosDbDatabase<TDatabase>(Action<DatabaseOptionsBuilder<TDatabase>>? options = null) where TDatabase : CosmosDatabase
         {
             var optionsBuilder = new DatabaseOptionsBuilder<TDatabase>();
             optionsBuilder.UseConnectionString(ConnectionString);

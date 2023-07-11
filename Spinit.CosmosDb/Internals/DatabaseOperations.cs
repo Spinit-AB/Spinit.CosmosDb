@@ -45,7 +45,17 @@ namespace Spinit.CosmosDb
         /// <returns></returns>
         public async Task<ThroughputProperties> GetThroughputAsync()
         {
-            return await _cosmosClient.GetDatabase(_database.Model.DatabaseId).ReadThroughputAsync(new RequestOptions()).ConfigureAwait(false);
+            //return await _cosmosClient.GetDatabase(_database.Model.DatabaseId).ReadThroughputAsync(new RequestOptions()).ConfigureAwait(false);
+            var database = _cosmosClient.GetDatabase(_database.Model.DatabaseId);
+            try { 
+            var throughputValue = await database.ReadThroughputAsync();
+            var throughput = await database.ReadThroughputAsync(new RequestOptions()).ConfigureAwait(false);
+            return throughput;
+            }
+            catch(Exception ex)
+            {
+                throw;
+            }
         }
 
         /// <summary>

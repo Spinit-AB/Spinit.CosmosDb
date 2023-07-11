@@ -5,11 +5,13 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
-using Documents = Microsoft.Azure.Documents;
 using Spinit.Expressions;
 using System.IO;
 using Newtonsoft.Json;
 using Spinit.CosmosDb.Validation;
+using System.Diagnostics;
+using Spinit.CosmosDb.Internals;
+using System.Threading;
 
 namespace Spinit.CosmosDb
 {
@@ -78,20 +80,17 @@ namespace Spinit.CosmosDb
             }
         }
 
-        public async Task UpsertAsync(IEnumerable<TEntity> entities)
+        public async Task UpsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
-            if (_container.Database.Client.ClientOptions.AllowBulkExecution)
+            var bulkOperations = new Bulk.Operations<DbEntry<TEntity>>(entities.Count());
+
+            foreach (var entity in entities)
             {
-                var tasks = entities.Select(UpsertAsync);
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+                var entry = new DbEntry<TEntity>(entity, _model.Analyzer, _jsonSerializerSettings);
+                bulkOperations.Add(Bulk.CaptureOperationResponse(_container.UpsertItemAsync(entry, new PartitionKey(entry.Id), cancellationToken: cancellationToken), entry));
             }
-            else
-            {
-                foreach (var entry in entities)
-                {
-                    await UpsertAsync(entry).ConfigureAwait(false);
-                }
-            }
+
+            await bulkOperations.ExecuteAsync().ConfigureAwait(false);
         }
 
         public Task UpsertAsync(TEntity document)
@@ -107,20 +106,16 @@ namespace Spinit.CosmosDb
             return _container.DeleteItemAsync<TEntity>(id, new PartitionKey(id));
         }
 
-        public async Task DeleteAsync(IEnumerable<string> ids)
+        public async Task DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
-            if (_container.Database.Client.ClientOptions.AllowBulkExecution)
+            var bulkOperations = new Bulk.Operations<string>(ids.Count());
+
+            foreach (var id in ids)
             {
-                var tasks = ids.Select(DeleteAsync);
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+                bulkOperations.Add(Bulk.CaptureOperationResponse(_container.DeleteItemAsync<string>(id, new PartitionKey(id), cancellationToken: cancellationToken), id));
             }
-            else
-            {
-                foreach (var id in ids)
-                {
-                    await DeleteAsync(id).ConfigureAwait(false);
-                }
-            }
+
+            await bulkOperations.ExecuteAsync().ConfigureAwait(false);
         }
 
         public async Task<int> CountAsync(ISearchRequest<TEntity> request)

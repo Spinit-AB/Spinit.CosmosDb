@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  DOTNET_VERSION: '3.1.x' # The .NET SDK version to use
+  DOTNET_VERSION: '7.x' # The .NET SDK version to use
 
 jobs:
   build-and-test:
@@ -30,6 +30,12 @@ jobs:
       
     - name: Build
       run: dotnet build --configuration Release --no-restore
+
+    - name: Start Cosmos Emulator
+      shell: pwsh
+      run: |
+        Import-Module "C:/Program Files/Azure Cosmos DB Emulator/PSModules/Microsoft.Azure.CosmosDB.Emulator"
+        Start-CosmosDbEmulator -NoUI -Trace
     
     - name: Test
       run: dotnet test --configuration Release --no-restore --verbosity normal

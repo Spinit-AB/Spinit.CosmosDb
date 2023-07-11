@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Shouldly;
 using Spinit.CosmosDb.Tests.Core;
 using Xunit;
 
@@ -32,7 +30,7 @@ namespace Spinit.CosmosDb.Tests.Integration
                 fetchedItems += searchResponse.Documents.Count();
 
             } while (continuationToken != null);
-            Assert.Equal(entityCount, fetchedItems);
+            fetchedItems.ShouldBe(entityCount);
         }
 
         public class TestDatabase : CosmosDatabase

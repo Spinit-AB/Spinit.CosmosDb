@@ -1,5 +1,4 @@
-using System;
-using System.Threading.Tasks;
+using Shouldly;
 using Spinit.CosmosDb.Tests.Core;
 using Xunit;
 
@@ -33,14 +32,14 @@ namespace Spinit.CosmosDb.Tests.Integration
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTime, output.DateTime);
+                    output.DateTime.ShouldBe(_input.DateTime);
                 }
 
                 [Fact]
                 public async Task KindShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTime.Kind, output.DateTime.Kind);
+                    output.DateTime.Kind.ShouldBe(_input.DateTime.Kind);
                 }
             }
 
@@ -69,14 +68,14 @@ namespace Spinit.CosmosDb.Tests.Integration
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTime, output.DateTime);
+                    output.DateTime.ShouldBe(_input.DateTime);
                 }
 
                 [Fact]
                 public async Task KindShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTime.Kind, output.DateTime.Kind);
+                    output.DateTime.Kind.ShouldBe(_input.DateTime.Kind);
                 }
             }
         }
@@ -107,14 +106,14 @@ namespace Spinit.CosmosDb.Tests.Integration
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTimeOffset, output.DateTimeOffset);
+                    output.DateTimeOffset.ShouldBe(_input.DateTimeOffset);
                 }
 
                 [Fact]
                 public async Task OffsetShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTimeOffset.Offset, output.DateTimeOffset.Offset);
+                    output.DateTimeOffset.Offset.ShouldBe(_input.DateTimeOffset.Offset);
                 }
             }
 
@@ -142,14 +141,14 @@ namespace Spinit.CosmosDb.Tests.Integration
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTimeOffset, output.DateTimeOffset);
+                    output.DateTimeOffset.ShouldBe(_input.DateTimeOffset);
                 }
 
                 [Fact]
                 public async Task OffsetShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTimeOffset.Offset, output.DateTimeOffset.Offset);
+                    output.DateTimeOffset.Offset.ShouldBe(_input.DateTimeOffset.Offset);
                 }
             }
 
@@ -179,14 +178,14 @@ namespace Spinit.CosmosDb.Tests.Integration
                 public async Task ValueShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTimeOffset, output.DateTimeOffset);
+                    output.DateTimeOffset.ShouldBe(_input.DateTimeOffset);
                 }
 
                 [Fact]
                 public async Task OffsetShouldBePreserved()
                 {
                     var output = await Database.TestEntities.GetAsync(_input.Id);
-                    Assert.Equal(_input.DateTimeOffset.Offset, output.DateTimeOffset.Offset);
+                    output.DateTimeOffset.Offset.ShouldBe(_input.DateTimeOffset.Offset);
                 }
             }
         }

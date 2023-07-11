@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Shouldly;
 using Spinit.CosmosDb.Tests.Unit.Infrastructure;
 using Xunit;
 
@@ -12,7 +12,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TextExtractors
         {
             var extractor = new StringPropertyTextExtractor();
             var result = extractor.ExtractText(scenario.Entity);
-            Assert.Equal(scenario.ExpectedResult, result);
+            result.ShouldBe(scenario.ExpectedResult);
         }
 
         public static TheoryData<Scenario> GetScenarios()

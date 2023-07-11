@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Shouldly;
 using Spinit.CosmosDb.Analysis;
 using Xunit;
 
@@ -14,7 +13,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TextExtractors
             var entity = new Product();
             var result = analyzer.AnalyzeEntity(entity).ToArray();
             string[] expected = new string[] { };
-            Assert.Equal(expected, result);
+            result.ShouldBe(expected);
         }
 
         [Fact]
@@ -34,7 +33,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TextExtractors
             };
             var result = analyzer.AnalyzeEntity(entity).ToArray();
             string[] expected = new string[] { "test1", "test2" };
-            Assert.Equal(expected, result);
+            result.ShouldBe(expected);
         }
 
         [Fact]
@@ -48,7 +47,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TextExtractors
             };
             var result = analyzer.AnalyzeEntity(entity).ToArray();
             string[] expected = new string[] { "5" };
-            Assert.Equal(expected, result);
+            result.ShouldBe(expected);
         }
 
         [Fact]
@@ -62,7 +61,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TextExtractors
             };
             var result = analyzer.AnalyzeEntity(entity).ToArray();
             string[] expected = new string[] { "testdescription" };
-            Assert.Equal(expected, result);
+            result.ShouldBe(expected);
         }
 
         [Fact]
@@ -86,7 +85,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TextExtractors
             };
             var result = analyzer.AnalyzeEntity(entity).ToArray();
             string[] expected = new string[] { "1", "10", "2", "20", "3", "30", "4", "40", "5", "50", "true", "false" };
-            Assert.Equal(expected, result);
+            result.ShouldBe(expected);
         }
 
         [Fact]
@@ -103,7 +102,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TextExtractors
             };
             var result = analyzer.AnalyzeEntity(entity).ToArray();
             string[] expected = new string[] { "3", "4" };
-            Assert.Equal(expected, result);
+            result.ShouldBe(expected);
         }
 
         public class Product : ICosmosEntity

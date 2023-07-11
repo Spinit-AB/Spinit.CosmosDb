@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Castle.DynamicProxy.Contributors;
+using Shouldly;
 using Spinit.CosmosDb.Tests.Core;
 using Spinit.CosmosDb.Tests.Core.Order;
 using Xunit;
@@ -31,9 +33,13 @@ namespace Spinit.CosmosDb.Tests.Integration
             var result = await Database.TestEntities.SearchAsync(new SearchRequest<TestEntity> { SortBy = x => x.Title, SortDirection = SortDirection.Ascending });
             var index = result.Documents.ToList().FindIndex(x => x.Id == entity.Id);
             if (entity.Title?.ToLower() == "a")
-                Assert.InRange(index, 0, 1);
-            else if (entity.Title?.ToLower() == "b")
-                Assert.InRange(index, 2, 3);
+            {
+                index.ShouldBeInRange(0, 1);
+            }
+            else if (entity.Title?.ToLower() == "b") 
+            {
+                index.ShouldBeInRange(2, 3);
+            }
         }
 
         public static TheoryData<TestEntity> GetEntities()

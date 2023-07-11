@@ -1,6 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.Azure.Cosmos;
+using Shouldly;
 using Spinit.CosmosDb.Tests.Core;
 using Spinit.CosmosDb.Tests.Core.Order;
 using Xunit;
@@ -30,7 +29,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestReadCollectionThroughput()
         {
             var throughputProperties = await _database.Todos.GetThroughputAsync();
-            Assert.Equal(1000, throughputProperties.Throughput);
+            throughputProperties.Throughput.ShouldBe(1000);
         }
 
         [Fact]
@@ -45,7 +44,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestGetDatabaseThroughputAfterSet()
         {
             var throughputProperties = await _database.Todos.GetThroughputAsync();
-            Assert.Equal(400, throughputProperties.Throughput);
+            throughputProperties.Throughput.ShouldBe(400);
         }
 
 

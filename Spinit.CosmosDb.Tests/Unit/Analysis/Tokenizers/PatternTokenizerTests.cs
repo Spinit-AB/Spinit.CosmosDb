@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Shouldly;
 using Spinit.CosmosDb.Tests.Unit.Infrastructure;
 using Xunit;
 
@@ -14,7 +14,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.Tokenizers
                 ? new PatternTokenizer()
                 : new PatternTokenizer(scenario.Pattern);
             var result = tokenizer.Tokenize(scenario.Input);
-            Assert.Equal(scenario.ExpectedResult, result);
+            result.ShouldBe(scenario.ExpectedResult);
         }
 
         public static TheoryData<Scenario> GetScenarios()

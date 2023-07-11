@@ -1,5 +1,6 @@
+using FakeItEasy;
 using Microsoft.Azure.Cosmos;
-using Moq;
+using Shouldly;
 using Xunit;
 
 namespace Spinit.CosmosDb.Tests.Unit
@@ -9,10 +10,10 @@ namespace Spinit.CosmosDb.Tests.Unit
         [Fact]
         public void ShouldAutoCreateCollectionProperties()
         {
-            var cosmosClient = Mock.Of<CosmosClient>();
+            var cosmosClient = A.Fake<CosmosClient>();
 
             var database = new TestDatabase(cosmosClient);
-            Assert.NotNull(database.TestEntities);
+            database.TestEntities.ShouldNotBeNull();
         }
 
         private class TestDatabase : CosmosDatabase

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Shouldly;
 using Xunit;
 
 namespace Spinit.CosmosDb.Tests.Unit.Internals
@@ -32,7 +30,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
             var jsonValue = JsonConvert.SerializeObject(obj, CosmosDatabase.CreateJsonSerializerSettings(_options));
             var jObj = JObject.Parse(jsonValue);
             var version = jObj["Version"]?.ToObject<string>();
-            Assert.Equal("v2", version);
+            version.ShouldBe("v2");
         }
 
         [Fact]
@@ -42,7 +40,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 "{ \"type\": \"MyObject\", \"version\": \"v3\" }",
                 CosmosDatabase.CreateJsonSerializerSettings(_options));
 
-            Assert.Equal(Version.Third, entity?.Version);
+            entity?.Version.ShouldBe(Version.Third);
         }
 
         private record TestEntity(string Type, Version Version);

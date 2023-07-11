@@ -1,6 +1,5 @@
-﻿using System;
-using AutoFixture;
-using Spinit.CosmosDb;
+﻿using AutoFixture;
+using Shouldly;
 using Xunit;
 
 namespace Spinit.CosmosDb.Tests.Unit.Internals
@@ -22,37 +21,37 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
             [Fact]
             public void IdShouldBeEqual()
             {
-                Assert.Equal(_original.Id, _normalized.Id);
+                _normalized.Id.ShouldBe(_original.Id);
             }
 
             [Fact]
             public void StringPropShouldBeLowercased()
             {
-                Assert.Equal(_original.StringProp?.ToLower(), _normalized.StringProp);
+                _normalized.StringProp.ShouldBe(_original.StringProp?.ToLower());
             }
 
             [Fact]
             public void IntPropShouldBeEqual()
             {
-                Assert.Equal(_original.IntProp, _normalized.IntProp);
+                _normalized.IntProp.ShouldBe(_original.IntProp);
             }
 
             [Fact]
             public void BoolPropShouldBeEqual()
             {
-                Assert.Equal(_original.BoolProp, _normalized.BoolProp);
+                _normalized.BoolProp.ShouldBe(_original.BoolProp);
             }
 
             [Fact]
             public void FloatPropShouldBeEqual()
             {
-                Assert.Equal(_original.FloatProp, _normalized.FloatProp);
+                _normalized.FloatProp.ShouldBe(_original.FloatProp);
             }
 
             [Fact]
             public void DateTimePropShouldBeEqual()
             {
-                Assert.Equal(_original.DateTimeProp, _normalized.DateTimeProp);
+                _normalized.DateTimeProp.ShouldBe(_original.DateTimeProp);
             }
 
             private class TestEntity : ICosmosEntity

@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Shouldly;
 using Xunit;
 
 namespace Spinit.CosmosDb.Tests.Unit.Internals
@@ -15,7 +13,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
             {
                 var collection = new MockDbCollectionThatOnlyReturnsOneRecordOnSearch();
                 var searchResponse = await collection.SearchAsync(new SearchRequest<DummyEntity> { PageSize = 100 });
-                Assert.Equal(MockDbCollectionThatOnlyReturnsOneRecordOnSearch.Data.Count(), searchResponse.Documents.Count());
+                searchResponse.Documents.Count().ShouldBe(MockDbCollectionThatOnlyReturnsOneRecordOnSearch.Data.Count());
             }
 
             internal class MockDbCollectionThatOnlyReturnsOneRecordOnSearch : CosmosDbCollection<DummyEntity>

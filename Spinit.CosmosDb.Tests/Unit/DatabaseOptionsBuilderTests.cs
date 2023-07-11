@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using Shouldly;
+using Xunit;
 
 namespace Spinit.CosmosDb.Tests.Unit
 {
@@ -21,25 +22,25 @@ namespace Spinit.CosmosDb.Tests.Unit
             [Fact]
             public void AccountEndpointShouldBeParsed()
             {
-                Assert.Equal(AccountEndpoint, _options.Endpoint);
+                _options.Endpoint.ShouldBe(AccountEndpoint);
             }
 
             [Fact]
             public void AccountKeyShouldBeParsed()
             {
-                Assert.Equal(AccountKey, _options.Key);
+                _options.Key.ShouldBe(AccountKey);
             }
 
             [Fact]
             public void DatabaseIdShouldBeParsed()
             {
-                Assert.Equal(DatabaseId, _options.DatabaseId);
+                _options.DatabaseId.ShouldBe(DatabaseId);
             }
 
             [Fact]
             public void PreferredLocationShouldBeParsed()
             {
-                Assert.Equal(PreferredLocation, _options.PreferredLocation);
+                _options.PreferredLocation.ShouldBe(PreferredLocation);
             }
         }
 

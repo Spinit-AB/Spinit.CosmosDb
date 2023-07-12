@@ -164,10 +164,7 @@ namespace Spinit.CosmosDb
         {
             var query = CreateQuery(request);
 
-            var queryDefinition = query
-                // Hack to get around bug: https://github.com/Azure/azure-cosmos-dotnet-v3/issues/1438
-                .Where(x => true)
-                .ToQueryDefinition();
+            var queryDefinition = query.ToQueryDefinition();
 
             var iterator = _container.GetItemQueryStreamIterator(queryDefinition, request.ContinuationToken, new QueryRequestOptions { MaxItemCount = request.PageSize });
 

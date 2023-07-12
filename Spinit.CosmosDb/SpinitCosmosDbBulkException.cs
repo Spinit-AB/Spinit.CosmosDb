@@ -5,7 +5,7 @@ using Spinit.CosmosDb.Internals;
 
 namespace Spinit.CosmosDb
 {
-    public class SpinitCosmosDbBulkException : Exception
+    public class SpinitCosmosDbBulkException : Exception, ICosmosBulkOperationResult
     {
         internal SpinitCosmosDbBulkException(string operation, IReadOnlyList<(object, Exception)> failures, int successfulDocuments, TimeSpan totalTimeTaken, double totalRequestUnitsConsumed) : base($"Bulk {operation} failed")
         {

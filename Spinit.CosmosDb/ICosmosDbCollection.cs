@@ -30,6 +30,8 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Bulk imports and/or updates a list of entities.
         /// </summary>
+        /// <returns>Bulk operation result</returns>
+        /// <exception cref="SpinitCosmosDbBulkException">If one or more operations failed, this exception will be thrown when the whole operation is completed.</exception>
         Task<ICosmosBulkOperationResult> UpsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -49,6 +51,8 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Deletes a list of entities.
         /// </summary>
+        /// <returns>Bulk operation result</returns>
+        /// <exception cref="SpinitCosmosDbBulkException">If one or more operations failed, this exception will be thrown when the whole operation is completed.</exception>
         Task<ICosmosBulkOperationResult> DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
 
         /// <summary>

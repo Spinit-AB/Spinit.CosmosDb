@@ -52,7 +52,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
             public string? DatabaseId { get; set; }
             public string? PreferredLocation { get; set; }
             public Action<JsonSerializerSettings>? ConfigureJsonSerializerSettings { get; set; }
-            public Action<CosmosClientOptions>? ConfigureCosmosClientOptions { get; set; }
+            public Action<(CosmosClientOptions, bool)>? ConfigureCosmosClientOptions { get; set; }
         }
 
         public class VersionJsonConverter : JsonConverter

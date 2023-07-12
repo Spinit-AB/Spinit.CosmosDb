@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
@@ -10,7 +9,7 @@ namespace Spinit.CosmosDb.Internals
 {
     internal static class Bulk
     {
-        public class Operations<T> : List<Task<OperationResponse<T>>>
+        internal class Operations<T> : List<Task<OperationResponse<T>>>
         {
             private readonly Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -30,7 +29,7 @@ namespace Spinit.CosmosDb.Internals
             }
         }
 
-        public class OperationsResponse<T>
+        internal class OperationsResponse<T> : ICosmosBulkOperationResult
         {
             public TimeSpan TotalTimeTaken { get; set; }
             public int SuccessfulDocuments { get; set; } = 0;
@@ -39,7 +38,7 @@ namespace Spinit.CosmosDb.Internals
             public IReadOnlyList<(T, Exception)> Failures { get; set; }
         }
 
-        public class OperationResponse<T>
+        internal class OperationResponse<T>
         {
             public T Item { get; set; }
             public double RequestUnitsConsumed { get; set; } = 0;
@@ -47,24 +46,26 @@ namespace Spinit.CosmosDb.Internals
             public Exception CosmosException { get; set; }
         }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Used in bulk execution where execution is meant to continue even in the event of exceptions")]
-        public static async Task<OperationResponse<T>> CaptureOperationResponse<T>(Task<ItemResponse<T>> task, T item)
+        internal static Task<OperationResponse<T>> CaptureOperationResponse<T>(Task<ItemResponse<T>> task, T item) => CaptureOperationResponse(task, item, origin => origin);
+
+        internal static async Task<OperationResponse<T2>> CaptureOperationResponse<T1, T2>(Task<ItemResponse<T1>> task, T1 item, Func<T1, T2> itemTransformation)
         {
             try
             {
-                ItemResponse<T> response = await task.ConfigureAwait(false);
-                return new OperationResponse<T>()
+                var response = await task.ConfigureAwait(false);
+
+                return new OperationResponse<T2>()
                 {
-                    Item = item,
+                    Item = itemTransformation(item),
                     IsSuccessful = true,
                     RequestUnitsConsumed = task.Result.RequestCharge
                 };
             }
             catch (CosmosException ex)
             {
-                return new OperationResponse<T>()
+                return new OperationResponse<T2>()
                 {
-                    Item = item,
+                    Item = itemTransformation(item),
                     RequestUnitsConsumed = ex.RequestCharge,
                     IsSuccessful = false,
                     CosmosException = ex
@@ -72,9 +73,9 @@ namespace Spinit.CosmosDb.Internals
             }
             catch (Exception ex)
             {
-                return new OperationResponse<T>()
+                return new OperationResponse<T2>()
                 {
-                    Item = item,
+                    Item = itemTransformation(item),
                     IsSuccessful = false,
                     CosmosException = ex
                 };

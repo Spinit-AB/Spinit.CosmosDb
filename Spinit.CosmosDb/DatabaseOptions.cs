@@ -25,6 +25,6 @@ namespace Spinit.CosmosDb
         public Action<JsonSerializerSettings> ConfigureJsonSerializerSettings { get; set; }
 
         /// <inheritdoc/>
-        public Action<CosmosClientOptions> ConfigureCosmosClientOptions { get; set; }
+        public Action<(CosmosClientOptions CosmosClientOptions, bool BulkClient)> ConfigureCosmosClientOptions { get; set; }
     }
 }

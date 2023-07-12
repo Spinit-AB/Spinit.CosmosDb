@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Spinit.CosmosDb.Internals;
 
 namespace Spinit.CosmosDb
 {
@@ -29,7 +30,7 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Bulk imports and/or updates a list of entities.
         /// </summary>
-        Task UpsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+        Task<ICosmosBulkOperationResult> UpsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Adds or updates an entity
@@ -37,9 +38,6 @@ namespace Spinit.CosmosDb
         /// <param name="entity"></param>
         /// <returns></returns>
         Task UpsertAsync(TEntity entity);
-
-        // TODO: Only for C# 8
-        //Task DeleteAsync(T document) => DeleteAsync(document.Id);
 
         /// <summary>
         /// Deletes an entity by id
@@ -51,7 +49,7 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Deletes a list of entities.
         /// </summary>
-        Task DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
+        Task<ICosmosBulkOperationResult> DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the throughput (RU/s) set for the collection.

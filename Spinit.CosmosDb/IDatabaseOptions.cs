@@ -28,6 +28,6 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Configure CosmosClient options
         /// </summary>
-        Action<CosmosClientOptions> ConfigureCosmosClientOptions { get; set; }
+        Action<(CosmosClientOptions CosmosClientOptions, bool BulkClient)> ConfigureCosmosClientOptions { get; set; }
     }
 }

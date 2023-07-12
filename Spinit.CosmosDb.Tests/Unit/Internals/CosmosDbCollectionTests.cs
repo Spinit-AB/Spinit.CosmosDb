@@ -21,7 +21,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 public static IEnumerable<DummyEntity> Data { get; } = Enumerable.Range(1, 10).Select(x => new DummyEntity { Id = x.ToString() }).ToList();
 
                 public MockDbCollectionThatOnlyReturnsOneRecordOnSearch()
-                    : base(null, new CollectionModel())
+                    : base(null, null, new CollectionModel())
                 {
                 }
 

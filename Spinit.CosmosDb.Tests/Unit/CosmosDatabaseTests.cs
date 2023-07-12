@@ -18,7 +18,7 @@ namespace Spinit.CosmosDb.Tests.Unit
 
         private class TestDatabase : CosmosDatabase
         {
-            public TestDatabase(CosmosClient client) : base(client, new DatabaseOptions<TestDatabase>()) { }
+            public TestDatabase(CosmosClient client) : base(client, client, new DatabaseOptions<TestDatabase>()) { }
 
             [CollectionId("TestEntities")]
             public ICosmosDbCollection<TestEntity>? TestEntities { get; set; }

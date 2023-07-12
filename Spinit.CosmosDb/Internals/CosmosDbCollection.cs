@@ -12,6 +12,7 @@ using Spinit.CosmosDb.Validation;
 using System.Diagnostics;
 using Spinit.CosmosDb.Internals;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace Spinit.CosmosDb
 {
@@ -28,12 +29,14 @@ namespace Spinit.CosmosDb
         where TEntity : class, ICosmosEntity
     {
         private readonly Container _container;
+        private readonly Container _bulkContainer;
         private readonly CollectionModel _model;
         private readonly JsonSerializerSettings _jsonSerializerSettings;
 
-        public CosmosDbCollection(Container container, CollectionModel model, JsonSerializerSettings settings = null)
+        public CosmosDbCollection(Container container, Container bulkContainer, CollectionModel model, JsonSerializerSettings settings = null)
         {
             _container = container;
+            _bulkContainer = bulkContainer;
             _model = model;
             _jsonSerializerSettings = settings ?? new JsonSerializerSettings();
         }
@@ -80,17 +83,24 @@ namespace Spinit.CosmosDb
             }
         }
 
-        public async Task UpsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public async Task<ICosmosBulkOperationResult> UpsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
-            var bulkOperations = new Bulk.Operations<DbEntry<TEntity>>(entities.Count());
-
+            var bulkOperations = new Bulk.Operations<TEntity>(entities.Count());
+            
             foreach (var entity in entities)
             {
                 var entry = new DbEntry<TEntity>(entity, _model.Analyzer, _jsonSerializerSettings);
-                bulkOperations.Add(Bulk.CaptureOperationResponse(_container.UpsertItemAsync(entry, new PartitionKey(entry.Id), cancellationToken: cancellationToken), entry));
+                bulkOperations.Add(Bulk.CaptureOperationResponse(_bulkContainer.UpsertItemAsync(entry, new PartitionKey(entry.Id), cancellationToken: cancellationToken), entry, EntryToEntityTransformation));
             }
 
-            await bulkOperations.ExecuteAsync().ConfigureAwait(false);
+            var result = await bulkOperations.ExecuteAsync().ConfigureAwait(false);
+            if (result.Failures is { Count: > 0 })
+            {
+                throw SpinitCosmosDbBulkException.Create("upsert", result);
+            }
+
+            return result;
         }
 
         public Task UpsertAsync(TEntity document)
@@ -106,16 +116,24 @@ namespace Spinit.CosmosDb
             return _container.DeleteItemAsync<TEntity>(id, new PartitionKey(id));
         }
 
-        public async Task DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public async Task<ICosmosBulkOperationResult> DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
             var bulkOperations = new Bulk.Operations<string>(ids.Count());
 
             foreach (var id in ids)
             {
-                bulkOperations.Add(Bulk.CaptureOperationResponse(_container.DeleteItemAsync<string>(id, new PartitionKey(id), cancellationToken: cancellationToken), id));
+                bulkOperations.Add(Bulk.CaptureOperationResponse(_bulkContainer.DeleteItemAsync<string>(id, new PartitionKey(id), cancellationToken: cancellationToken), id));
             }
 
-            await bulkOperations.ExecuteAsync().ConfigureAwait(false);
+            var result = await bulkOperations.ExecuteAsync().ConfigureAwait(false);
+            if (result.Failures is { Count: > 0 })
+            {
+                throw SpinitCosmosDbBulkException.Create("delete", result);
+            }
+
+            return result;
         }
 
         public async Task<int> CountAsync(ISearchRequest<TEntity> request)
@@ -199,6 +217,11 @@ namespace Spinit.CosmosDb
             }
 
             return query;
+        }
+
+        private static TEntity EntryToEntityTransformation(DbEntry<TEntity> entry)
+        {
+            return entry.Original;
         }
     }
 }

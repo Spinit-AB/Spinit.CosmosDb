@@ -55,20 +55,30 @@ namespace Spinit.CosmosDb
 
         protected CosmosDatabase(IDatabaseOptions options, bool initialize = true)
             : this(
-                  new CosmosClient(
+                  cosmosClient: new CosmosClient(
                       accountEndpoint: new Uri(options.Endpoint).AbsoluteUri,
                       authKeyOrResourceToken: options.Key,
-                      clientOptions: CreateCosmosClientOptions(options)),
+                      clientOptions: CreateCosmosClientOptions(options, bulkClient: false)),
+                  cosmosBulkClient: new CosmosClient(
+                      accountEndpoint: new Uri(options.Endpoint).AbsoluteUri,
+                      authKeyOrResourceToken: options.Key,
+                      clientOptions: CreateCosmosClientOptions(options, bulkClient: true)),
                   options, 
                   initialize) 
         {
             
         }
 
-        internal static CosmosClientOptions CreateCosmosClientOptions(IDatabaseOptions options = null)
+        internal static CosmosClientOptions CreateCosmosClientOptions(IDatabaseOptions options = null, bool bulkClient = false)
         {
             var clientOptions = new CosmosClientOptions();
-            options?.ConfigureCosmosClientOptions?.Invoke(clientOptions);
+            if (bulkClient)
+            {
+                clientOptions.AllowBulkExecution = true;
+            }
+
+            options?.ConfigureCosmosClientOptions?.Invoke((clientOptions, bulkClient));
+
             return clientOptions;
         }
 
@@ -88,9 +98,10 @@ namespace Spinit.CosmosDb
             return settings;
         }
 
-        protected CosmosDatabase(CosmosClient cosmosClient, IDatabaseOptions options, bool initialize = true)
+        protected CosmosDatabase(CosmosClient cosmosClient, CosmosClient cosmosBulkClient, IDatabaseOptions options, bool initialize = true)
         {
             CosmosClient = cosmosClient;
+            CosmosBulkClient = cosmosBulkClient;
             _jsonSerializerSettings = CreateJsonSerializerSettings(options);
             _options = options;
             
@@ -101,9 +112,14 @@ namespace Spinit.CosmosDb
         }
 
         /// <summary>
-        /// Access to lowlevel document client
+        /// Access to lowlevel client
         /// </summary>
         public CosmosClient CosmosClient { get; }
+
+        /// <summary>
+        /// Access to lowlevel bulk client
+        /// </summary>
+        public CosmosClient CosmosBulkClient { get; }
 
         /// <summary>
         /// Database model used
@@ -161,7 +177,11 @@ namespace Spinit.CosmosDb
             if (string.IsNullOrEmpty(collectionModel.CollectionId))
                 collectionModel.CollectionId = collectionProperty.GetCollectionId();
 
-            var collection = new CosmosDbCollection<TEntity>(CosmosClient.GetContainer(collectionModel.DatabaseId, collectionModel.CollectionId), collectionModel, _jsonSerializerSettings);
+            var collection = new CosmosDbCollection<TEntity>(
+                CosmosClient.GetContainer(collectionModel.DatabaseId, collectionModel.CollectionId),
+                CosmosBulkClient.GetContainer(collectionModel.DatabaseId, collectionModel.CollectionId),
+                collectionModel, 
+                _jsonSerializerSettings);
             collectionProperty.SetValue(this, collection);
         }
 

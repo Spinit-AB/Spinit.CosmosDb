@@ -174,7 +174,10 @@ namespace Spinit.CosmosDb.Tests.Integration
                 result.ShouldNotBeNull();
             }
 
-            await _database.Todos.DeleteAsync(todoItems.Select(x => x.Id));
+            var bulkException = await Should.ThrowAsync<SpinitCosmosDbBulkException>(_database.Todos.DeleteAsync(todoItems.Select(x => x.Id)));
+            bulkException.Failures.ShouldHaveSingleItem();
+            bulkException.SuccessfulDocuments.ShouldBe(todoItems.Count() - 1);
+
             foreach (var todoItem in todoItems)
             {
                 var result = await _database.Todos.GetAsync(todoItem.Id);

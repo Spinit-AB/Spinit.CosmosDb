@@ -1,5 +1,5 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Shouldly;
 using Xunit;
 
 namespace Spinit.CosmosDb.Tests.Unit.Internals
@@ -15,7 +15,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var jsonValue = JsonConvert.SerializeObject(utcNow, CosmosDatabase.CreateJsonSerializerSettings()).Trim('\"');
                 var utcFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF'Z'";
                 var expected = utcNow.ToString(utcFormat);
-                Assert.Equal(expected, jsonValue);
+                jsonValue.ShouldBe(expected);
             }
 
             [Fact]
@@ -25,7 +25,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var jsonValue = JsonConvert.SerializeObject(now, CosmosDatabase.CreateJsonSerializerSettings()).Trim('\"');
                 var format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFzzz";
                 var expected = now.ToString(format);
-                Assert.Equal(expected, jsonValue);
+                jsonValue.ShouldBe(expected);
             }
 
             [Fact]
@@ -35,7 +35,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var jsonValue = JsonConvert.SerializeObject(now, CosmosDatabase.CreateJsonSerializerSettings()).Trim('\"');
                 var format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF";
                 var expected = now.ToString(format);
-                Assert.Equal(expected, jsonValue);
+                jsonValue.ShouldBe(expected);
             }
 
             [Theory]
@@ -47,7 +47,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var dateTime = DateTime.Parse(dateTimeString);
                 var jsonValue = JsonConvert.SerializeObject(dateTime, serializerSettings);
                 var value = JsonConvert.DeserializeObject<DateTime>(jsonValue, serializerSettings);
-                Assert.Equal(dateTime, value);
+                value.ShouldBe(dateTime);
             }
 
             [Theory]
@@ -59,7 +59,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var dateTime = DateTime.Parse(dateTimeString);
                 var jsonValue = JsonConvert.SerializeObject(dateTime, serializerSettings);
                 var value = JsonConvert.DeserializeObject<DateTime>(jsonValue, serializerSettings);
-                Assert.Equal(dateTime.Kind, value.Kind);
+                value.Kind.ShouldBe(dateTime.Kind);
             }
 
             public class WithinObject
@@ -75,7 +75,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                     var jsonValue = JsonConvert.SerializeObject(entity, CosmosDatabase.CreateJsonSerializerSettings());
                     var format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF'Z'";
                     var expected = $"{{\"DateTime\":\"{utcNow.ToString(format)}\"}}";
-                    Assert.Equal(expected, jsonValue);
+                    jsonValue.ShouldBe(expected);
                 }
 
                 [Fact]
@@ -89,7 +89,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                     var jsonValue = JsonConvert.SerializeObject(entity, CosmosDatabase.CreateJsonSerializerSettings());
                     var format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFzzz";
                     var expected = $"{{\"DateTime\":\"{now.ToString(format)}\"}}";
-                    Assert.Equal(expected, jsonValue);
+                    jsonValue.ShouldBe(expected);
                 }
 
                 [Fact]
@@ -103,7 +103,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                     var jsonValue = JsonConvert.SerializeObject(entity, CosmosDatabase.CreateJsonSerializerSettings());
                     var format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF";
                     var expected = $"{{\"DateTime\":\"{now.ToString(format)}\"}}";
-                    Assert.Equal(expected, jsonValue);
+                    jsonValue.ShouldBe(expected);
                 }
 
                 [Theory]
@@ -119,7 +119,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                     };
                     var jsonValue = JsonConvert.SerializeObject(entity, serializerSettings);
                     var value = JsonConvert.DeserializeObject<TestEntity>(jsonValue, serializerSettings);
-                    Assert.Equal(dateTime, value.DateTime);
+                    value?.DateTime.ShouldBe(dateTime);
                 }
 
                 [Theory]
@@ -135,7 +135,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                     };
                     var jsonValue = JsonConvert.SerializeObject(entity, serializerSettings);
                     var value = JsonConvert.DeserializeObject<TestEntity>(jsonValue, serializerSettings);
-                    Assert.Equal(dateTime.Kind, value.DateTime.Kind);
+                    value?.DateTime.Kind.ShouldBe(dateTime.Kind);
                 }
 
                 public class TestEntity
@@ -154,7 +154,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var jsonValue = JsonConvert.SerializeObject(utcNow, CosmosDatabase.CreateJsonSerializerSettings()).Trim('\"');
                 var format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF'+00:00'";
                 var expected = utcNow.ToString(format);
-                Assert.Equal(expected, jsonValue);
+                jsonValue.ShouldBe(expected);
             }
 
             [Fact]
@@ -164,7 +164,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var jsonValue = JsonConvert.SerializeObject(now, CosmosDatabase.CreateJsonSerializerSettings()).Trim('\"');
                 var format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF'+0" + now.Offset.Hours + ":00'";
                 var expected = now.ToString(format);
-                Assert.Equal(expected, jsonValue);
+                jsonValue.ShouldBe(expected);
             }
 
             [Fact]
@@ -176,7 +176,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var jsonValue = JsonConvert.SerializeObject(now, CosmosDatabase.CreateJsonSerializerSettings()).Trim('\"');
                 var format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF'+08:00'";
                 var expected = now.ToString(format);
-                Assert.Equal(expected, jsonValue);
+                jsonValue.ShouldBe(expected);
             }
 
             [Fact]
@@ -185,7 +185,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var serializerSettings = CosmosDatabase.CreateJsonSerializerSettings();
                 var jsonValue = "\"2019-05-08T08:00:00.0000000+08:00\"";
                 var result = JsonConvert.DeserializeObject<DateTimeOffset>(jsonValue, serializerSettings);
-                Assert.Equal(8, result.Offset.Hours);
+                result.Offset.Hours.ShouldBe(8);
             }
 
             [Theory]
@@ -199,7 +199,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var dateTimeOffset = DateTimeOffset.Parse(dateTimeString);
                 var jsonValue = JsonConvert.SerializeObject(dateTimeOffset, serializerSettings);
                 var value = JsonConvert.DeserializeObject<DateTimeOffset>(jsonValue, serializerSettings);
-                Assert.Equal(dateTimeOffset, value);
+                value.ShouldBe(dateTimeOffset);
             }
 
             [Theory]
@@ -213,7 +213,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 var dateTimeOffset = DateTimeOffset.Parse(dateTimeString);
                 var jsonValue = JsonConvert.SerializeObject(dateTimeOffset, serializerSettings);
                 var value = JsonConvert.DeserializeObject<DateTimeOffset>(jsonValue, serializerSettings);
-                Assert.Equal(dateTimeOffset.Offset, value.Offset);
+                value.Offset.ShouldBe(dateTimeOffset.Offset);
             }
 
             public class WithinObject
@@ -233,7 +233,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                     };
                     var jsonValue = JsonConvert.SerializeObject(entity, serializerSettings);
                     var value = JsonConvert.DeserializeObject<TestEntity>(jsonValue, serializerSettings);
-                    Assert.Equal(dateTimeOffset, value.DateTimeOffset);
+                    value?.DateTimeOffset.ShouldBe(dateTimeOffset);
                 }
 
                 [Theory]
@@ -251,7 +251,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                     };
                     var jsonValue = JsonConvert.SerializeObject(entity, serializerSettings);
                     var value = JsonConvert.DeserializeObject<TestEntity>(jsonValue, serializerSettings);
-                    Assert.Equal(dateTimeOffset.Offset, value.DateTimeOffset.Offset);
+                    value?.DateTimeOffset.Offset.ShouldBe(dateTimeOffset.Offset);
                 }
 
                 public class TestEntity

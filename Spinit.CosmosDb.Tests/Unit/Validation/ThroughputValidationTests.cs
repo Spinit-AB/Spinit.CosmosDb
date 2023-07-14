@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos;
+using Shouldly;
 using Spinit.CosmosDb.Validation;
 using Xunit;
 
@@ -18,7 +19,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Validation
         public void TestIsValidManualThoughput(int throughput, bool expected)
         {
             var isValid = ThroughputValidator.IsValidThroughput(ThroughputProperties.CreateManualThroughput(throughput), out _);
-            Assert.Equal(expected, isValid);
+            isValid.ShouldBe(expected);
         }
 
         [Theory]
@@ -32,7 +33,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Validation
         public void TestIsValidAutoscaleThoughput(int throughput, bool expected)
         {
             var isValid = ThroughputValidator.IsValidThroughput(ThroughputProperties.CreateAutoscaleThroughput(throughput), out _);
-            Assert.Equal(expected, isValid);
+            isValid.ShouldBe(expected);
         }
     }
 }

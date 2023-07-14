@@ -5,14 +5,14 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
-using Microsoft.Azure.CosmosDB.BulkExecutor;
-using Microsoft.Azure.CosmosDB.BulkExecutor.BulkImport;
-using Microsoft.Azure.CosmosDB.BulkExecutor.BulkDelete;
-using Documents = Microsoft.Azure.Documents;
 using Spinit.Expressions;
 using System.IO;
 using Newtonsoft.Json;
 using Spinit.CosmosDb.Validation;
+using System.Diagnostics;
+using Spinit.CosmosDb.Internals;
+using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace Spinit.CosmosDb
 {
@@ -29,14 +29,14 @@ namespace Spinit.CosmosDb
         where TEntity : class, ICosmosEntity
     {
         private readonly Container _container;
-        private readonly Documents.IDocumentClient _documentClient;
+        private readonly Container _bulkContainer;
         private readonly CollectionModel _model;
         private readonly JsonSerializerSettings _jsonSerializerSettings;
 
-        public CosmosDbCollection(Container container, Documents.IDocumentClient documentClient, CollectionModel model, JsonSerializerSettings settings = null)
+        public CosmosDbCollection(Container container, Container bulkContainer, CollectionModel model, JsonSerializerSettings settings = null)
         {
             _container = container;
-            _documentClient = documentClient;
+            _bulkContainer = bulkContainer;
             _model = model;
             _jsonSerializerSettings = settings ?? new JsonSerializerSettings();
         }
@@ -83,25 +83,24 @@ namespace Spinit.CosmosDb
             }
         }
 
-        public async Task UpsertAsync(IEnumerable<TEntity> entities)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public async Task<ICosmosBulkOperationResult> UpsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
-            var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
-
-            var bulkExecutor = new BulkExecutor(_documentClient as Documents.Client.DocumentClient, documentCollection);
-            await bulkExecutor.InitializeAsync().ConfigureAwait(false);
-
-            var entries = entities.Select(x => new DbEntry<TEntity>(x, _model.Analyzer, _jsonSerializerSettings));
-
-            BulkImportResponse bulkImportResponse = null;
-            do
+            var bulkOperations = new Bulk.Operations<TEntity>(entities.Count());
+            
+            foreach (var entity in entities)
             {
-                bulkImportResponse = await bulkExecutor
-                    .BulkImportAsync(
-                        entries,
-                        enableUpsert: true,
-                        disableAutomaticIdGeneration: true)
-                    .ConfigureAwait(false);
-            } while (bulkImportResponse.NumberOfDocumentsImported < entries.Count());
+                var entry = new DbEntry<TEntity>(entity, _model.Analyzer, _jsonSerializerSettings);
+                bulkOperations.Add(Bulk.CaptureOperationResponse(_bulkContainer.UpsertItemAsync(entry, new PartitionKey(entry.Id), cancellationToken: cancellationToken), entry, EntryToEntityTransformation));
+            }
+
+            var result = await bulkOperations.ExecuteAsync().ConfigureAwait(false);
+            if (result.Failures is { Count: > 0 })
+            {
+                throw SpinitCosmosDbBulkException.Create("upsert", result);
+            }
+
+            return result;
         }
 
         public Task UpsertAsync(TEntity document)
@@ -117,22 +116,24 @@ namespace Spinit.CosmosDb
             return _container.DeleteItemAsync<TEntity>(id, new PartitionKey(id));
         }
 
-        public async Task DeleteAsync(IEnumerable<string> ids)
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public async Task<ICosmosBulkOperationResult> DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
-            var documentCollection = await _documentClient.ReadDocumentCollectionAsync(GetCollectionUri()).ConfigureAwait(false);
+            var bulkOperations = new Bulk.Operations<string>(ids.Count());
 
-            var bulkExecutor = new BulkExecutor(_documentClient as Documents.Client.DocumentClient, documentCollection);
-            await bulkExecutor.InitializeAsync().ConfigureAwait(false);
-
-            var entries = ids.Select(x => new Tuple<string, string>(x, x)).ToList();
-
-            BulkDeleteResponse bulkDeleteResponse = null;
-            do
+            foreach (var id in ids)
             {
-                bulkDeleteResponse = await bulkExecutor
-                    .BulkDeleteAsync(entries)
-                    .ConfigureAwait(false);
-            } while (bulkDeleteResponse.NumberOfDocumentsDeleted < entries.Count && bulkDeleteResponse.NumberOfDocumentsDeleted > 0);
+                bulkOperations.Add(Bulk.CaptureOperationResponse(_bulkContainer.DeleteItemAsync<string>(id, new PartitionKey(id), cancellationToken: cancellationToken), id));
+            }
+
+            var result = await bulkOperations.ExecuteAsync().ConfigureAwait(false);
+            if (result.Failures is { Count: > 0 })
+            {
+                throw SpinitCosmosDbBulkException.Create("delete", result);
+            }
+
+            return result;
         }
 
         public async Task<int> CountAsync(ISearchRequest<TEntity> request)
@@ -163,10 +164,7 @@ namespace Spinit.CosmosDb
         {
             var query = CreateQuery(request);
 
-            var queryDefinition = query
-                // Hack to get around bug: https://github.com/Azure/azure-cosmos-dotnet-v3/issues/1438
-                .Where(x => true)
-                .ToQueryDefinition();
+            var queryDefinition = query.ToQueryDefinition();
 
             var iterator = _container.GetItemQueryStreamIterator(queryDefinition, request.ContinuationToken, new QueryRequestOptions { MaxItemCount = request.PageSize });
 
@@ -218,9 +216,9 @@ namespace Spinit.CosmosDb
             return query;
         }
 
-        private Uri GetCollectionUri()
+        private static TEntity EntryToEntityTransformation(DbEntry<TEntity> entry)
         {
-            return Documents.Client.UriFactory.CreateDocumentCollectionUri(_model.DatabaseId, _model.CollectionId);
+            return entry.Original;
         }
     }
 }

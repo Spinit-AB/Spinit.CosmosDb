@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Shouldly;
 using Xunit;
 
 namespace Spinit.CosmosDb.Tests.Unit.Internals
@@ -15,7 +13,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
             {
                 var collection = new MockDbCollectionThatOnlyReturnsOneRecordOnSearch();
                 var searchResponse = await collection.SearchAsync(new SearchRequest<DummyEntity> { PageSize = 100 });
-                Assert.Equal(MockDbCollectionThatOnlyReturnsOneRecordOnSearch.Data.Count(), searchResponse.Documents.Count());
+                searchResponse.Documents.Count().ShouldBe(MockDbCollectionThatOnlyReturnsOneRecordOnSearch.Data.Count());
             }
 
             internal class MockDbCollectionThatOnlyReturnsOneRecordOnSearch : CosmosDbCollection<DummyEntity>
@@ -38,7 +36,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                         : item.Id;
                     var searchResponse = new SearchResponse<TProjection>
                     {
-                        Documents = new[] { JsonConvert.DeserializeObject<TProjection>(JsonConvert.SerializeObject(item)) },
+                        Documents = new[] { JsonConvert.DeserializeObject<TProjection>(JsonConvert.SerializeObject(item)) }!,
                         ContinuationToken = continuationToken
                     };
                     return Task.FromResult(searchResponse);
@@ -47,7 +45,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
 
             public class DummyEntity : ICosmosEntity
             {
-                public string Id { get; set; }
+                public required string Id { get; set; }
             }
         }
     }

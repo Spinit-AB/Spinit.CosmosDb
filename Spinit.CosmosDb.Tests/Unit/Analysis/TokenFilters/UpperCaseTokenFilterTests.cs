@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Shouldly;
 using Spinit.CosmosDb.Tests.Unit.Infrastructure;
 using Xunit;
 
@@ -12,7 +12,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TokenFilters
         {
             var filter = new UppercaseTokenFilter();
             var result = filter.Execute(scenario.Input, scenario.AnalyzeContext);
-            Assert.Equal(scenario.ExpectedResult, result);
+            result.ShouldBe(scenario.ExpectedResult);
         }
 
         public static TheoryData<Scenario> GetScenarios()
@@ -60,9 +60,9 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TokenFilters
 
         public class Scenario : XunitSerializable
         {
-            public IEnumerable<string> Input { get; set; }
-            public AnalyzeContext AnalyzeContext { get; set; }
-            public IEnumerable<string> ExpectedResult { get; set; }
+            public required IEnumerable<string> Input { get; set; }
+            public required AnalyzeContext AnalyzeContext { get; set; }
+            public required IEnumerable<string> ExpectedResult { get; set; }
         }
     }
 }

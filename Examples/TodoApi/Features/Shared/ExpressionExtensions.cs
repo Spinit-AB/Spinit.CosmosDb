@@ -60,7 +60,7 @@ namespace TodoApi.Features.Shared
 
             protected override Expression VisitParameter(ParameterExpression parameter)
             {
-                if (_parametersMap.TryGetValue(parameter, out ParameterExpression replacement))
+                if (_parametersMap.TryGetValue(parameter, out var replacement))
                 {
                     parameter = replacement;
                 }

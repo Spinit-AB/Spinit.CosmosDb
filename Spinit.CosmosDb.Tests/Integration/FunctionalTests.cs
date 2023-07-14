@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Shouldly;
 using Spinit.CosmosDb.Tests.Core;
 using Spinit.CosmosDb.Tests.Core.Order;
 using Xunit;
@@ -49,7 +46,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestCountAll()
         {
             var count = await _database.Todos.CountAsync(new SearchRequest<TodoItem> { });
-            Assert.Equal(10, count);
+            count.ShouldBe(10);
         }
 
         [Fact]
@@ -57,7 +54,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestCountWithFilter()
         {
             var count = await _database.Todos.CountAsync(new SearchRequest<TodoItem> { Filter = x => x.Status == TodoStatus.Done });
-            Assert.Equal(4, count);
+            count.ShouldBe(4);
         }
 
         [Fact]
@@ -66,7 +63,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         {
             var expectedItemCount = GetTodoItems().Count();
             var result = await _database.Todos.SearchAsync(new SearchRequest<TodoItem> { PageSize = int.MaxValue });
-            Assert.Equal(expectedItemCount, result.Documents.Count());
+            result.Documents.Count().ShouldBe(expectedItemCount);
         }
 
         [Theory]
@@ -75,7 +72,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestSearchOnTitle(TodoItem todoItem)
         {
             var result = await _database.Todos.SearchAsync(new SearchRequest<TodoItem> { Query = todoItem.Title, PageSize = int.MaxValue });
-            Assert.Single(result.Documents);
+            result.Documents.ShouldHaveSingleItem();
         }
 
         [Theory]
@@ -85,7 +82,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         {
             var titleReversed = string.Join(' ', todoItem.Title.Split(' ').Reverse());
             var result = await _database.Todos.SearchAsync(new SearchRequest<TodoItem> { Query = titleReversed, PageSize = int.MaxValue });
-            Assert.Single(result.Documents);
+            result.Documents.ShouldHaveSingleItem();
         }
 
         [Theory]
@@ -94,7 +91,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestSearchFilterOnStatus(TodoItem todoItem)
         {
             var result = await _database.Todos.SearchAsync(new SearchRequest<TodoItem> { Filter = x => x.Status == todoItem.Status, PageSize = int.MaxValue });
-            Assert.Contains(result.Documents, x => x.Id == todoItem.Id);
+            result.Documents.ShouldContain(x => x.Id == todoItem.Id);
         }
 
         [Theory]
@@ -103,7 +100,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestSearchWithProjection(TodoItem todoItem)
         {
             var result = await _database.Todos.SearchAsync<TodoItemProjection>(new SearchRequest<TodoItem> { PageSize = int.MaxValue });
-            Assert.Contains(result.Documents, x => x.Id == todoItem.Id);
+            result.Documents.ShouldContain(x => x.Id == todoItem.Id);
         }
 
         [Theory]
@@ -112,8 +109,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestGet(TodoItem todoItem)
         {
             var result = await _database.Todos.GetAsync(todoItem.Id);
-            Assert.NotNull(result);
-            Assert.Equal(todoItem.Id, result.Id);
+            result.ShouldNotBeNull().Id.ShouldBe(todoItem.Id);
         }
 
         [Theory]
@@ -122,8 +118,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task GetShouldReturnTitle(TodoItem todoItem)
         {
             var result = await _database.Todos.GetAsync(todoItem.Id);
-            Assert.NotNull(result);
-            Assert.NotEmpty(todoItem.Title);
+            result.ShouldNotBeNull().Title.ShouldNotBeEmpty();
         }
 
         [Theory]
@@ -132,8 +127,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestGetWithProjection(TodoItem todoItem)
         {
             var result = await _database.Todos.GetAsync<TodoItemProjection>(todoItem.Id);
-            Assert.NotNull(result);
-            Assert.Equal(todoItem.Id, result.Id);
+            result.ShouldNotBeNull().Id.ShouldBe(todoItem.Id);
         }
 
         [Theory]
@@ -144,7 +138,7 @@ namespace Spinit.CosmosDb.Tests.Integration
             await _database.Todos.DeleteAsync(todoItem.Id);
 
             var result = await _database.Todos.GetAsync(todoItem.Id);
-            Assert.Null(result);
+            result.ShouldBeNull();
         }
 
         [Theory]
@@ -156,14 +150,14 @@ namespace Spinit.CosmosDb.Tests.Integration
             foreach (var todoItem in todoItems)
             {
                 var result = await _database.Todos.GetAsync(todoItem.Id);
-                Assert.NotNull(result);
+                result.ShouldNotBeNull();
             }
 
             await _database.Todos.DeleteAsync(todoItems.Select(x => x.Id));
             foreach (var todoItem in todoItems)
             {
                 var result = await _database.Todos.GetAsync(todoItem.Id);
-                Assert.Null(result);
+                result.ShouldBeNull();
             }
         }
 
@@ -177,20 +171,23 @@ namespace Spinit.CosmosDb.Tests.Integration
             foreach (var todoItem in todoItems.Skip(1))
             {
                 var result = await _database.Todos.GetAsync(todoItem.Id);
-                Assert.NotNull(result);
+                result.ShouldNotBeNull();
             }
 
-            await _database.Todos.DeleteAsync(todoItems.Select(x => x.Id));
+            var bulkException = await Should.ThrowAsync<SpinitCosmosDbBulkException>(_database.Todos.DeleteAsync(todoItems.Select(x => x.Id)));
+            bulkException.Failures.ShouldHaveSingleItem();
+            bulkException.SuccessfulDocuments.ShouldBe(todoItems.Count() - 1);
+
             foreach (var todoItem in todoItems)
             {
                 var result = await _database.Todos.GetAsync(todoItem.Id);
                 if (todoItem.Id == missingId)
                 {
-                    Assert.NotNull(todoItem);
+                    todoItem.ShouldNotBeNull();
                 }
                 else
                 {
-                    Assert.Null(result);
+                    result.ShouldBeNull();
                 }
             }
         }
@@ -215,14 +212,14 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestReadNewlyReplacedThrouhgput()
         {
             var throughputProperties = await _database.Todos.GetThroughputAsync();
-            Assert.Equal(1000, throughputProperties.Throughput);
+            throughputProperties.Throughput.ShouldBe(1000);
         }
 
         [Fact]
         [TestOrder]
         public async Task TestReplaceThroughputWithInvalidThroughput()
         {
-            await Assert.ThrowsAsync<ArgumentException>(async () => await _database.Todos.SetThroughputAsync(ThroughputProperties.CreateManualThroughput(399)));
+            await Should.ThrowAsync<ArgumentException>(async () => await _database.Todos.SetThroughputAsync(ThroughputProperties.CreateManualThroughput(399)));
         }
 
         public static IEnumerable<TodoItem> GetItems()
@@ -243,7 +240,8 @@ namespace Spinit.CosmosDb.Tests.Integration
                     Status = todoStatus,
                     CreatedDate = DateTime.Today.Date.AddDays(-recordCount),
                     Title = $"Title for item {x}",
-                    Description = $"Title for item {x}"
+                    Description = $"Title for item {x}",
+                    Tags = Enumerable.Empty<string>()
                 });
             });
 
@@ -278,17 +276,17 @@ namespace Spinit.CosmosDb.Tests.Integration
 
         public class TodoItem : ICosmosEntity
         {
-            public string Id { get; set; }
-            public TodoStatus Status { get; set; }
-            public DateTime CreatedDate { get; set; }
-            public string Title { get; set; }
-            public string Description { get; set; }
-            public IEnumerable<string> Tags { get; set; }
+            public required string Id { get; set; }
+            public required TodoStatus Status { get; set; }
+            public required DateTime CreatedDate { get; set; }
+            public required string Title { get; set; }
+            public string? Description { get; set; }
+            public required IEnumerable<string> Tags { get; set; }
         }
 
         public class TodoItemProjection : ICosmosEntity
         {
-            public string Id { get; set; }
+            public required string Id { get; set; }
         }
 
         public enum TodoStatus

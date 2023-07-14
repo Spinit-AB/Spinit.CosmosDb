@@ -1,6 +1,5 @@
-﻿using System;
-using System.Linq;
-using AutoFixture;
+﻿using AutoFixture;
+using Shouldly;
 using Spinit.CosmosDb.Tests.Core.Models;
 using Xunit;
 
@@ -22,44 +21,44 @@ namespace Spinit.CosmosDb.Tests.Unit
             public void AllPropertiesShouldBeSet(string propertyName)
             {
                 var property = _target.GetType().GetProperty(propertyName);
-                var defaultValue = property.PropertyType.GetDefaultValue();
-                Assert.NotEqual(defaultValue, property.GetValue(_target));
+                var defaultValue = property?.PropertyType.GetDefaultValue();
+                property?.GetValue(_target).ShouldNotBe(defaultValue);
             }
 
             [Fact]
             public void QueryShouldBeSet()
             {
-                Assert.Equal(Source.Query, _target.Query);
+                _target.Query.ShouldBe(Source.Query);
             }
 
             [Fact]
             public void PageSizeShouldBeSet()
             {
-                Assert.Equal(Source.PageSize, _target.PageSize);
+                _target.PageSize.ShouldBe(Source.PageSize);
             }
 
             [Fact]
             public void ContinuationTokenShouldBeSet()
             {
-                Assert.Equal(Source.ContinuationToken, _target.ContinuationToken);
+                _target.ContinuationToken.ShouldBe(Source.ContinuationToken);
             }
 
             [Fact]
             public void FilterShouldBeSet()
             {
-                Assert.Equal(Source.Filter, _target.Filter);
+                _target.Filter.ShouldBe(Source.Filter);
             }
 
             [Fact]
             public void SortByShouldBeSet()
             {
-                Assert.Equal(Source.SortBy, _target.SortBy);
+                _target.SortBy.ShouldBe(Source.SortBy);
             }
 
             [Fact]
             public void SortDirectionShouldBeSet()
             {
-                Assert.Equal(Source.SortDirection, _target.SortDirection);
+                _target.SortDirection.ShouldBe(Source.SortDirection);
             }
 
             protected override void SetupFixture()
@@ -88,7 +87,7 @@ namespace Spinit.CosmosDb.Tests.Unit
 
     public static class TypeExtensions
     {
-        public static object GetDefaultValue(this Type type)
+        public static object? GetDefaultValue(this Type type)
         {
             return type.IsValueType
                 ? Activator.CreateInstance(type)

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Shouldly;
 using Spinit.CosmosDb.Tests.Unit.Infrastructure;
 using Xunit;
 
@@ -12,7 +12,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.Tokenizers
         {
             var tokenizer = new WhitespaceTokenizer();
             var result = tokenizer.Tokenize(scenario.Input);
-            Assert.Equal(scenario.ExpectedResult, result);
+            result.ShouldBe(scenario.ExpectedResult);
         }
 
         public static TheoryData<Scenario> GetScenarios()
@@ -29,8 +29,8 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.Tokenizers
 
         public class Scenario : XunitSerializable
         {
-            public string Input { get; set; }
-            public IEnumerable<string> ExpectedResult { get; set; }
+            public required string Input { get; set; }
+            public required IEnumerable<string> ExpectedResult { get; set; }
         }
     }
 }

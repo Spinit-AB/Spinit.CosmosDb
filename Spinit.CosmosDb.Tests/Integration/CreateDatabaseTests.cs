@@ -1,6 +1,5 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Shouldly;
 using Spinit.CosmosDb.Tests.Core;
 using Spinit.CosmosDb.Tests.Core.Order;
 using Xunit;
@@ -33,7 +32,7 @@ namespace Spinit.CosmosDb.Tests.Integration
             var throughputProperties = await database.Dummies.GetThroughputAsync();
             await database.Operations.DeleteAsync();
 
-            Assert.Equal(400, throughputProperties.Throughput);
+            throughputProperties.Throughput.ShouldBe(400);
         }
 
         [Theory]
@@ -48,7 +47,7 @@ namespace Spinit.CosmosDb.Tests.Integration
             var throughputProperties = await database.Dummies.GetThroughputAsync();
             await database.Operations.DeleteAsync();
 
-            Assert.Equal(expected, throughputProperties.Throughput);
+            throughputProperties.Throughput.ShouldBe(expected);
         }
 
         [Theory]
@@ -60,8 +59,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         public async Task TestCreateDatabaseWithInvalidThroughputSet(int defaultThroughput)
         {
             var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
-
-            await Assert.ThrowsAsync<ArgumentException>(async () => await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(defaultThroughput, ThroughputType.Container)));
+            await Should.ThrowAsync<ArgumentException>(async () => await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(defaultThroughput, ThroughputType.Container)));
         }
 
         [Theory]
@@ -74,7 +72,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         {
             var database = Adapter.CreateCosmosDbDatabase<DummyDatabase>();
 
-            await Assert.ThrowsAsync<ArgumentException>(async () => await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(ThroughputProperties.CreateAutoscaleThroughput(maxThroughput), ThroughputType.Container)));
+            await Should.ThrowAsync<ArgumentException>(async () => await database.Operations.CreateIfNotExistsAsync(new CreateDbOptions(ThroughputProperties.CreateAutoscaleThroughput(maxThroughput), ThroughputType.Container)));
         }
 
         [Theory]
@@ -89,7 +87,7 @@ namespace Spinit.CosmosDb.Tests.Integration
             var throughputProperties = await database.Operations.GetThroughputAsync();
             await database.Operations.DeleteAsync();
 
-            Assert.Equal(expected, throughputProperties.Throughput);
+            throughputProperties.Throughput.ShouldBe(expected);
         }
 
         [Fact]
@@ -102,7 +100,7 @@ namespace Spinit.CosmosDb.Tests.Integration
             var throughputProperties = await database.Dummies.GetThroughputAsync();
             await database.Operations.DeleteAsync();
 
-            Assert.Equal(500, throughputProperties.Throughput);
+            throughputProperties.Throughput.ShouldBe(500);
         }
 
         [Theory]
@@ -120,22 +118,20 @@ namespace Spinit.CosmosDb.Tests.Integration
             await database.Operations.DeleteAsync();
 
             var minThroughput = maxThroughput / 10;
-            Assert.Equal(minThroughput, throughputProperties.Throughput);
-            Assert.Equal(maxThroughput, throughputProperties.AutoscaleMaxThroughput);
+            throughputProperties.Throughput.ShouldBe(minThroughput);
+            throughputProperties.AutoscaleMaxThroughput.ShouldBe(maxThroughput);
         }
 
         public class DummyDatabase : CosmosDatabase
         {
-            public DummyDatabase(IDatabaseOptions options) : base(options, true)
-            { }
+            public DummyDatabase(IDatabaseOptions options) : base(options, true) { }
 
-
-            public ICosmosDbCollection<DummyEntity> Dummies { get; set; }
+            public required ICosmosDbCollection<DummyEntity> Dummies { get; set; }
         }
 
         public class DummyEntity : ICosmosEntity
         {
-            public string Id { get; set; }
+            public required string Id { get; set; }
         }
     }
 }

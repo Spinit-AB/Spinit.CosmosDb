@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Shouldly;
 using Spinit.CosmosDb.Tests.Core;
 using Xunit;
 
@@ -16,7 +15,7 @@ namespace Spinit.CosmosDb.Tests.Integration
         {
             await Database.Entities.UpsertAsync(new TestEntity { Id = "123", Title = "Test title for entity 1" });
             var response = await Database.Entities.SearchAsync(new SearchRequest<TestEntity> { Query = "ti" });
-            Assert.Single(response.Documents);
+            response.Documents.ShouldHaveSingleItem();
         }
 
         public class TestDatabase : CosmosDatabase<TestDatabase>
@@ -38,8 +37,8 @@ namespace Spinit.CosmosDb.Tests.Integration
 
         public class TestEntity : ICosmosEntity
         {
-            public string Id { get; set; }
-            public string Title { get; set; }
+            public required string Id { get; set; }
+            public string? Title { get; set; }
         }
     }
 }

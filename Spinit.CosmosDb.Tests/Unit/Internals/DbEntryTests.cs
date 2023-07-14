@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Shouldly;
 using Xunit;
 
 namespace Spinit.CosmosDb.Tests.Unit.Internals
@@ -23,55 +23,55 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
             [Fact]
             public void IdShouldBeSet()
             {
-                Assert.NotEmpty(_dbEntry.Id);
+                _dbEntry.Id.ShouldNotBeEmpty();
             }
 
             [Fact]
             public void IdShouldBeSetFromSource()
             {
-                Assert.Equal(_entity.Id, _dbEntry.Id);
+                _dbEntry.Id.ShouldBe(_entity.Id);
             }
 
             [Fact]
             public void OriginalShouldBeSet()
             {
-                Assert.NotNull(_dbEntry.Original);
+                _dbEntry.Original.ShouldNotBeNull();
             }
 
             [Fact]
             public void OriginalShouldBeEqualToSourceEntity()
             {
-                Assert.Equal(_entity, _dbEntry.Original);
+                _dbEntry.Original.ShouldBe(_entity);
             }
 
             [Fact]
             public void NormalizedShouldBeSet()
             {
-                Assert.NotNull(_dbEntry.Normalized);
+                _dbEntry.Normalized.ShouldNotBeNull();
             }
 
             [Fact]
-            public void NormalizedNameShouldBeLowecase()
+            public void NormalizedNameShouldBeLowercase()
             {
-                Assert.Equal("test entity", _dbEntry.Normalized.Name);
+                _dbEntry.Normalized.Name.ShouldBe("test entity");
             }
 
             [Fact]
             public void AllFieldShouldBeSet()
             {
-                Assert.NotNull(_dbEntry.All);
+                _dbEntry.All.ShouldNotBeNull();
             }
 
             [Fact]
             public void AllFieldShouldNonEmpty()
             {
-                Assert.NotEmpty(_dbEntry.All);
+                _dbEntry.All.ShouldNotBeEmpty();
             }
 
             public class TestEntity : ICosmosEntity
             {
-                public string Id { get; set; }
-                public string Name { get; set; }
+                public required string Id { get; set; }
+                public string? Name { get; set; }
             }
         }
     }

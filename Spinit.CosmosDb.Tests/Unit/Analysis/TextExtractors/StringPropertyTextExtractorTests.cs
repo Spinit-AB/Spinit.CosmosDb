@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Shouldly;
 using Spinit.CosmosDb.Tests.Unit.Infrastructure;
 using Xunit;
 
@@ -12,7 +12,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TextExtractors
         {
             var extractor = new StringPropertyTextExtractor();
             var result = extractor.ExtractText(scenario.Entity);
-            Assert.Equal(scenario.ExpectedResult, result);
+            result.ShouldBe(scenario.ExpectedResult);
         }
 
         public static TheoryData<Scenario> GetScenarios()
@@ -69,20 +69,20 @@ namespace Spinit.CosmosDb.Tests.Unit.Analysis.TextExtractors
 
         public class Scenario : XunitSerializable
         {
-            public ICosmosEntity Entity { get; set; }
-            public IEnumerable<string> ExpectedResult { get; set; }
+            public required ICosmosEntity Entity { get; set; }
+            public required IEnumerable<string> ExpectedResult { get; set; }
         }
 
         public class Product : ICosmosEntity
         {
-            public string Id { get; set; }
-            public string Title { get; set; }
-            public string Description { get; set; }
+            public required string Id { get; set; }
+            public string? Title { get; set; }
+            public string? Description { get; set; }
             public double Price { get; set; }
             public int Stock { get; set; }
             public bool OutOfStock { get; set; }
-            public IEnumerable<string> Tags { get; set; }
-            public IEnumerable<Product> SimilarProducts { get; set; }
+            public IEnumerable<string>? Tags { get; set; }
+            public IEnumerable<Product>? SimilarProducts { get; set; }
         }
     }
 }

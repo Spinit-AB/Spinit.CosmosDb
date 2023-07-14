@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Shouldly;
 using Xunit;
 
 namespace Spinit.CosmosDb.Tests.Unit.Internals
@@ -28,11 +26,11 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
         [Fact]
         public void Serialize_custom()
         {
-            var obj = new TestEntity { Type = "MyObject", Version = Version.Second };
+            var obj = new TestEntity(Type: "MyObject", Version: Version.Second);
             var jsonValue = JsonConvert.SerializeObject(obj, CosmosDatabase.CreateJsonSerializerSettings(_options));
             var jObj = JObject.Parse(jsonValue);
-            var version = jObj["Version"].ToObject<string>();
-            Assert.Equal("v2", version);
+            var version = jObj["Version"]?.ToObject<string>();
+            version.ShouldBe("v2");
         }
 
         [Fact]
@@ -42,30 +40,26 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 "{ \"type\": \"MyObject\", \"version\": \"v3\" }",
                 CosmosDatabase.CreateJsonSerializerSettings(_options));
 
-            Assert.Equal(Version.Third, entity.Version);
+            entity?.Version.ShouldBe(Version.Third);
         }
 
-        private class TestEntity
-        {
-            public string Type { get; set; }
-            public Version Version { get; set; }
-        }
+        private record TestEntity(string Type, Version Version);
 
         private class CustomOptions : IDatabaseOptions
         {
-            public string Endpoint { get; set; }
-            public string Key { get; set; }
-            public string DatabaseId { get; set; }
-            public string PreferredLocation { get; set; }
-            public Action<JsonSerializerSettings> ConfigureJsonSerializerSettings { get; set; }
-            public Action<CosmosClientOptions> ConfigureCosmosClientOptions { get; set; }
+            public string? Endpoint { get; set; }
+            public string? Key { get; set; }
+            public string? DatabaseId { get; set; }
+            public string? PreferredLocation { get; set; }
+            public Action<JsonSerializerSettings>? ConfigureJsonSerializerSettings { get; set; }
+            public Action<(CosmosClientOptions, bool)>? ConfigureCosmosClientOptions { get; set; }
         }
 
         public class VersionJsonConverter : JsonConverter
         {
             public override bool CanConvert(Type objectType) => objectType == typeof(Version);
 
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
             {
                 if (reader.Value is string id)
                 {
@@ -75,7 +69,7 @@ namespace Spinit.CosmosDb.Tests.Unit.Internals
                 return null;
             }
 
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
             {
                 if (value is Version version)
                 {

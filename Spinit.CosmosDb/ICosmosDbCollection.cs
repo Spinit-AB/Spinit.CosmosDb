@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Spinit.CosmosDb.Internals;
 
 namespace Spinit.CosmosDb
 {
@@ -28,9 +30,9 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Bulk imports and/or updates a list of entities.
         /// </summary>
-        /// <param name="entities"></param>
-        /// <returns></returns>
-        Task UpsertAsync(IEnumerable<TEntity> entities);
+        /// <returns>Bulk operation result</returns>
+        /// <exception cref="SpinitCosmosDbBulkException">If one or more operations failed, this exception will be thrown when the whole operation is completed.</exception>
+        Task<ICosmosBulkOperationResult> UpsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Adds or updates an entity
@@ -38,9 +40,6 @@ namespace Spinit.CosmosDb
         /// <param name="entity"></param>
         /// <returns></returns>
         Task UpsertAsync(TEntity entity);
-
-        // TODO: Only for C# 8
-        //Task DeleteAsync(T document) => DeleteAsync(document.Id);
 
         /// <summary>
         /// Deletes an entity by id
@@ -52,9 +51,9 @@ namespace Spinit.CosmosDb
         /// <summary>
         /// Deletes a list of entities.
         /// </summary>
-        /// <param name="ids"></param>
-        /// <returns></returns>
-        Task DeleteAsync(IEnumerable<string> ids);
+        /// <returns>Bulk operation result</returns>
+        /// <exception cref="SpinitCosmosDbBulkException">If one or more operations failed, this exception will be thrown when the whole operation is completed.</exception>
+        Task<ICosmosBulkOperationResult> DeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the throughput (RU/s) set for the collection.
